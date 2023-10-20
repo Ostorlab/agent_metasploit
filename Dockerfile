@@ -9,4 +9,4 @@ ENV PYTHONPATH=/app
 COPY agent /app/agent
 COPY ostorlab.yaml /app/agent/ostorlab.yaml
 WORKDIR /app
-CMD ["python3", "/app/agent/nmap_agent.py"]
+CMD ["python3", "/app/agent/metasploit_agent.py"]
