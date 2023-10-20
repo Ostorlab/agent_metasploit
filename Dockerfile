@@ -1,10 +1,7 @@
 FROM kalilinux/kali-rolling:latest
-RUN apt-get update && apt-get install -y build-essential \
-                                        python3 \
-                                        python3-pip \
-                                        metasploit-framework \
-                                        && \
-                                        python3 -m pip install --upgrade pip
+RUN apt-get update && apt-get install -y python3 \
+                                         python3-pip \
+                                         metasploit-framework
 COPY requirement.txt /requirement.txt
 RUN python3 -m pip install -r /requirement.txt
 RUN mkdir -p /app/agent
