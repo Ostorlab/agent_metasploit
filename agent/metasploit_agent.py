@@ -1,26 +1,19 @@
 """Ostorlab Agent implementation for metasploit"""
 import logging
-import pathlib
-import random
-import string
-import tempfile
-import urllib
-import urllib.parse
-from typing import Tuple, Any
-
-import requests
-from ostorlab.agent import agent
-from ostorlab.agent.kb import kb
-from ostorlab.agent.message import message as m
-from ostorlab.agent.mixins import agent_report_vulnerability_mixin
-from rich import logging as rich_logging
+import socket
+import time
 from urllib import parse as urlparser
-from pymetasploit3 import msfrpc
+from ostorlab.agent.kb import kb
+
+from ostorlab.agent import agent, definitions as agent_definitions
+from ostorlab.agent.message import message as m
 from ostorlab.agent.mixins import agent_persist_mixin as persist_mixin
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
-from ostorlab.agent import agent, definitions as agent_definitions
 from ostorlab.runtimes import definitions as runtime_definitions
-import subprocess
+from pymetasploit3 import msfrpc
+from rich import logging as rich_logging
+
+from agent import utils
 
 logging.basicConfig(
     format="%(message)s",
@@ -31,9 +24,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+AGENT_ARGS = ["module"]
 SCHEME_TO_PORT = {"http": 80, "https": 443}
 DEFAULT_PORT = 443
-COMMAND_TIMEOUT = 180
+MODULE_TIMEOUT = 90
 
 
 class Error(Exception):
@@ -44,16 +38,12 @@ class ArgumentError(Error):
     """Error when a required argument is missing"""
 
 
-class PayloadError(Error):
-    """Errors related to metasploit payloads"""
+class ModuleError(Error):
+    """Errors related to metasploit modules"""
 
 
-def initialize_msf_rpc():
-    msfrpc_pwd = "".join([random.choice(string.ascii_letters) for _ in range(12)])
-    command = ["msfrpcd", "-P", msfrpc_pwd]
-    subprocess.run(command, shell=True, check=True)
-    client = msfrpc.MsfRpcClient(msfrpc_pwd, ssl=True)
-    return client
+class CheckError(Error):
+    """Errors related to metasploit check method"""
 
 
 class MetasploitAgent(
@@ -69,8 +59,7 @@ class MetasploitAgent(
         agent.Agent.__init__(self, agent_definition, agent_settings)
         vuln_mixin.AgentReportVulnMixin.__init__(self)
         persist_mixin.AgentPersistMixin.__init__(self, agent_settings)
-        self.client = initialize_msf_rpc()
-        self.lhost = ""
+        self.client = utils.initialize_msf_rpc()
 
     def process(self, message: m.Message) -> None:
         """Trigger Source map enumeration and emit found findings
@@ -79,66 +68,72 @@ class MetasploitAgent(
             message: A message containing the path and the content of the file to be processed
 
         """
-        if module := self.args.get("module") is None:
+        module = self.args.get("module")
+        if module is None:
             raise ArgumentError("Metasploit module must be specified.")
 
-        rhost, rport = self._prepare_target(message)
+        vhost, rport = self._prepare_target(message)
+        rhost = socket.gethostbyname(vhost)
 
         module_type, module_name = module.split("/", 1)
-        if module_type == "exploit":
-            if module_name not in self.client.modules.exploits:
-                raise ArgumentError("Requested metasploit module is not found.")
-        elif module_type == "auxiliary":
-            if module_name not in self.client.modules.auxiliary:
-                raise ArgumentError("Requested metasploit module is not found.")
-        else:
-            raise ArgumentError("Metasploit module should be exploit or auxiliary.")
+        try:
+            selected_module = self.client.modules.use(module_type, module_name)
+        except msfrpc.MsfRpcError:
+            raise ModuleError("Specified module does not exist")
 
-        selected_module = self.client.modules.use(module_type, module_name)
-        logger.info("Selected metasploit module: %s", selected_module)
-        selected_module["RHOSTS"] = rhost
-        selected_module["RPORT"] = rport
+        logger.info("Selected metasploit module: %s", selected_module.modulename)
+        if "RHOSTS" in selected_module.required:
+            selected_module["RHOSTS"] = rhost
+            selected_module["VHOST"] = vhost
+        elif "DOMAIN" in selected_module.required:
+            selected_module["DOMAIN"] = rhost
+        else:
+            raise ArgumentError(
+                "Argument not implemented, accepted args: %s"
+                % str(selected_module.required)
+            )
+
+        extra_args = [arg_name for arg_name in self.args if arg_name not in AGENT_ARGS]
+        for arg in extra_args:
+            if arg in selected_module.required:
+                selected_module[arg] = self.args.get(arg)
+
         if len(selected_module.missing_required) > 0:
             raise ArgumentError(
                 "The following arguments are missing: %s",
                 str(selected_module.missing_required),
             )
 
-        reverse_payloads = [
-            payload
-            for payload in selected_module.targetpayloads()
-            if "reverse" in payload
-        ]
-        exec_payloads = [
-            payload for payload in selected_module.targetpayloads() if "exec" in payload
-        ]
-
-        if self.args.get("payload") is not None:
-            payload_name = self.args.get("payload")
-        elif reverse_payloads:
-            payload_name = reverse_payloads[0]
-        elif exec_payloads:
-            payload_name = exec_payloads[0]
+        if module_type == "exploit":
+            job = selected_module.check_exploit()
+        elif module_type == "auxiliary":
+            job = selected_module.execute()
         else:
-            raise NotImplemented(
-                "The specified payload is not implemented in this agent yet."
+            raise ArgumentError("Metasploit module should be exploit or auxiliary.")
+
+        job_uuid = job["uuid"]
+        started_timestamp = time.time()
+        while True:
+            status = self.client.jobs.info_by_uuid(job_uuid)["status"]
+            if status == "completed":
+                break
+            if time.time() - started_timestamp > MODULE_TIMEOUT:
+                raise CheckError("Timeout while running job: %s" % job_uuid)
+            time.sleep(5)
+        results = self.client.jobs.info_by_uuid(job_uuid)["result"]
+        if results and results.get("code") == "safe":
+            return
+        cid = self.client.consoles.console().cid
+        console_output = self.client.consoles.console(cid).run_module_with_output(
+            selected_module
+        )
+        module_output = console_output.split("WORKSPACE => ostorlab")[1]
+        if "[-]" not in module_output and "[+]" in module_output:
+            self.report_vulnerability(
+                entry=kb.KB.WEB_GENERIC,
+                technical_detail=module_output,
+                risk_rating=vuln_mixin.RiskRating.INFO,
             )
-
-        try:
-            payload = self.client.modules.use("payload", payload_name)
-        except TypeError:
-            raise PayloadError("Received an invalid payload argument.")
-
-        logger.info("Using %s payload", payload.fullname)
-        argument = payload.missing_required[0]
-        if argument == "CMD":
-            payload[argument] = f"ping {self.lhost}"
-        elif argument == "LHOST":
-            payload[argument] = self.lhost
-        else:
-            raise NotImplemented("Payload configuration is not implemented")
-
-        job = selected_module.execute(payload=payload)
 
     def _get_port(self, message: m.Message) -> int:
         """Returns the port to be used for the target."""
