@@ -2,10 +2,12 @@
 import random
 import string
 import subprocess
+
 from pymetasploit3 import msfrpc
 
 
 def initialize_msf_rpc():
+    """Start msfrpcd and connect to it"""
     msfrpc_pwd = "".join([random.choice(string.ascii_letters) for _ in range(12)])
     command = ["msfrpcd", "-P", msfrpc_pwd]
     subprocess.run(command, shell=True, check=True)

@@ -3,17 +3,17 @@ import logging
 import socket
 import time
 from urllib import parse as urlparser
-from ostorlab.agent.kb import kb
 
 from ostorlab.agent import agent, definitions as agent_definitions
+from ostorlab.agent.kb import kb
 from ostorlab.agent.message import message as m
 from ostorlab.agent.mixins import agent_persist_mixin as persist_mixin
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
 from ostorlab.runtimes import definitions as runtime_definitions
-from pymetasploit3 import msfrpc
 from rich import logging as rich_logging
 
 from agent import utils
+from pymetasploit3 import msfrpc
 
 logging.basicConfig(
     format="%(message)s",
