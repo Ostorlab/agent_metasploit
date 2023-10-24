@@ -2264,7 +2264,9 @@ class MsfConsole(object):
             if c["id"] == self.cid:
                 return c["busy"]
 
-    def run_module_with_output(self, mod, payload=None, run_as_job=False, timeout=301):
+    def run_module_with_output(
+        self, mod, mode="check", payload=None, run_as_job=False, timeout=301
+    ):
         """
         Execute a module and wait for the returned data
 
@@ -2281,7 +2283,7 @@ class MsfConsole(object):
         opts = mod.runoptions.copy()
         if payload is None:
             opts["DisablePayloadHandler"] = True
-        opts["WORKSPACE"] = "Ostorlab"
+
         # Set module params
         for k in opts.keys():
             options_str += "set {} {}\n".format(k, opts[k])
@@ -2309,9 +2311,14 @@ class MsfConsole(object):
                 raise ValueError(
                     "No valid PayloadModule provided for exploit execution."
                 )
-
+        options_str += "set WORKSPACE Ostorlab\n"
         # Run the module without directly opening a command line
-        options_str += "run -z"
+        if mode == "check":
+            options_str += "check -z"
+        elif mode == "exploit":
+            options_str += "run -z"
+        else:
+            raise ValueError("Invalid Mode")
         if run_as_job:
             options_str += " -j"
         self.rpc.consoles.console(self.cid).write(options_str)

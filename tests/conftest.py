@@ -56,7 +56,7 @@ def safe_scan_message() -> message.Message:
 def vulnerable_scan_message() -> message.Message:
     """Creates a message of type v3.asset.domain_name.service to be used by the agent for testing purposes."""
     selector = "v3.asset.domain_name.service"
-    msg_data = {"schema": "http", "name": "localhost", "port": 80}
+    msg_data = {"schema": "http", "name": "www.google.com", "port": 80}
     return message.Message.from_data(selector, data=msg_data)
 
 
@@ -108,7 +108,7 @@ RHOSTS => 127.0.0.1
 VHOST => localhost
 [!] Unknown datastore option: DisablePayloadHandler.
 DisablePayloadHandler => True
-WORKSPACE => ostorlab
+WORKSPACE => Ostorlab
 [*] Server: Apache
 [+] Joomla version: 1.0
 [*] Scanned 1 of 1 hosts (100% complete)

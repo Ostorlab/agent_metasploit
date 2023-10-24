@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 AGENT_ARGS = ["module"]
 SCHEME_TO_PORT = {"http": 80, "https": 443}
 DEFAULT_PORT = 443
-MODULE_TIMEOUT = 90
+MODULE_TIMEOUT = 180
 
 
 class Error(Exception):
@@ -84,7 +84,8 @@ class MetasploitAgent(
         logger.info("Selected metasploit module: %s", selected_module.modulename)
         if "RHOSTS" in selected_module.required:
             selected_module["RHOSTS"] = rhost
-            selected_module["VHOST"] = vhost
+            if "VHOST" in selected_module.required:
+                selected_module["VHOST"] = vhost
         elif "DOMAIN" in selected_module.required:
             selected_module["DOMAIN"] = rhost
         else:
@@ -103,10 +104,12 @@ class MetasploitAgent(
                 "The following arguments are missing: %s",
                 str(selected_module.missing_required),
             )
-
+        cid = self.client.consoles.console().cid
         if module_type == "exploit":
+            mode = "check"
             job = selected_module.check_exploit()
         elif module_type == "auxiliary":
+            mode = "exploit"
             job = selected_module.execute()
         else:
             raise ArgumentError("Metasploit module should be exploit or auxiliary.")
@@ -121,19 +124,29 @@ class MetasploitAgent(
                 raise CheckError("Timeout while running job: %s" % job_uuid)
             time.sleep(5)
         results = self.client.jobs.info_by_uuid(job_uuid)["result"]
-        if results and results.get("code") == "safe":
+
+        if isinstance(results, dict) and results.get("code") == "safe":
             return
-        cid = self.client.consoles.console().cid
-        console_output = self.client.consoles.console(cid).run_module_with_output(
-            selected_module
-        )
-        module_output = console_output.split("WORKSPACE => ostorlab")[1]
-        if "[-]" not in module_output and "[+]" in module_output:
-            self.report_vulnerability(
-                entry=kb.KB.WEB_GENERIC,
-                technical_detail=module_output,
-                risk_rating=vuln_mixin.RiskRating.INFO,
+
+        technical_detail = f'Using `{module_type}` module `{module_name}`\n'
+
+        if isinstance(results, list):
+            technical_detail += "\n".join(results)
+        else:
+            cid = self.client.consoles.console().cid
+            console_output = self.client.consoles.console(cid).run_module_with_output(
+                selected_module, mode=mode
             )
+            module_output = console_output.split("WORKSPACE => Ostorlab")[1]
+            if "[-]" in module_output:
+                return
+            technical_detail += module_output
+
+        self.report_vulnerability(
+            entry=kb.KB.WEB_GENERIC,
+            technical_detail=technical_detail,
+            risk_rating=vuln_mixin.RiskRating.INFO,
+        )
 
     def _get_port(self, message: m.Message) -> int:
         """Returns the port to be used for the target."""
