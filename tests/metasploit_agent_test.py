@@ -1,4 +1,4 @@
-"""Unittests for agent Metasploit."""
+"""Unit tests for agent Metasploit."""
 import json
 
 from ostorlab.agent.message import message
@@ -11,12 +11,10 @@ from pymetasploit3 import msfrpc
 
 def testExploitCheck_whenSafe_returnNone(
     agent_instance: msf_agent.MetasploitAgent,
-    mocker: plugin.MockerFixture,
     agent_mock: list[message.Message],
-    msfrpc_client: msfrpc.MsfRpcClient,
-    safe_scan_message,
+    scan_message: message.Message,
 ) -> None:
-    """Unittest for agent metasploit"""
+    """Unit test for agent metasploit"""
     agent_instance.settings.args = [
         utils_definitions.Arg(
             name="module",
@@ -25,19 +23,17 @@ def testExploitCheck_whenSafe_returnNone(
         )
     ]
 
-    agent_instance.process(safe_scan_message)
+    agent_instance.process(scan_message)
 
     assert len(agent_mock) == 0
 
 
 def testAuxiliaryExecute_whenSafe_returnNone(
     agent_instance: msf_agent.MetasploitAgent,
-    mocker: plugin.MockerFixture,
     agent_mock: list[message.Message],
-    msfrpc_client: msfrpc.MsfRpcClient,
-    safe_scan_message,
+    scan_message: message.Message,
 ) -> None:
-    """Unittest for agent metasploit"""
+    """Unit test for agent metasploit"""
     agent_instance.settings.args = [
         utils_definitions.Arg(
             name="module",
@@ -46,7 +42,7 @@ def testAuxiliaryExecute_whenSafe_returnNone(
         )
     ]
 
-    agent_instance.process(safe_scan_message)
+    agent_instance.process(scan_message)
 
     assert len(agent_mock) == 0
 
@@ -55,11 +51,10 @@ def testAuxiliaryExecute_whenVulnerable_returnFindings(
     agent_instance: msf_agent.MetasploitAgent,
     mocker: plugin.MockerFixture,
     agent_mock: list[message.Message],
-    msfrpc_client: msfrpc.MsfRpcClient,
-    vulnerable_scan_message,
-    msf_console_output,
+    scan_message: message.Message,
+    auxiliary_console_output: str,
 ) -> None:
-    """Unittest for agent metasploit"""
+    """Unit test for agent metasploit"""
     agent_instance.settings.args = [
         utils_definitions.Arg(
             name="module",
@@ -69,36 +64,79 @@ def testAuxiliaryExecute_whenVulnerable_returnFindings(
     ]
     mocker.patch(
         "pymetasploit3.msfrpc.MsfConsole.run_module_with_output",
-        return_value=msf_console_output,
+        return_value=auxiliary_console_output,
     )
 
-    agent_instance.process(vulnerable_scan_message)
+    agent_instance.process(scan_message)
 
     assert len(agent_mock) == 1
 
 
-def testAuxiliaryExecute_whenExtraArgsPassed_returnFindings(
+def testExploitCheck_whenVulnerable_returnFindings(
     agent_instance: msf_agent.MetasploitAgent,
     mocker: plugin.MockerFixture,
     agent_mock: list[message.Message],
     msfrpc_client: msfrpc.MsfRpcClient,
-    vulnerable_scan_message,
-    msf_console_output,
+    metasploitable_scan_message: message.Message,
 ) -> None:
-    """Unittest for agent metasploit"""
+    """Unit test for agent metasploit"""
+    mocker.patch(
+        "pymetasploit3.msfrpc.MsfModule.check_exploit",
+        return_value={"job_id": 10, "uuid": "CzwatViyCW2tJABg0FiYfHeC"},
+    )
+    mocker.patch(
+        "pymetasploit3.msfrpc.JobManager.info_by_uuid",
+        return_value={
+            "status": "completed",
+            "result": {
+                "code": "vulnerable",
+                "message": "The target is vulnerable.",
+                "reason": None,
+                "details": {},
+            },
+        },
+    )
     agent_instance.settings.args = [
         utils_definitions.Arg(
             name="module",
             type="string",
-            value=json.dumps("auxiliary/scanner/portscan/tcp").encode(),
-        ),
-        utils_definitions.Arg(
-            name="PORTS",
-            type="string",
-            value=json.dumps("80,443").encode(),
+            value=json.dumps("exploit/unix/misc/distcc_exec").encode(),
         )
     ]
 
-    agent_instance.process(vulnerable_scan_message)
+    agent_instance.process(metasploitable_scan_message)
+
+    assert len(agent_mock) == 1
+
+
+def testExploitCheck_whenVulnerable_returnConsoleOutput(
+    agent_instance: msf_agent.MetasploitAgent,
+    mocker: plugin.MockerFixture,
+    agent_mock: list[message.Message],
+    metasploitable_scan_message: message.Message,
+    exploit_console_output: str,
+) -> None:
+    """Unit test for agent metasploit"""
+    mocker.patch(
+        "pymetasploit3.msfrpc.MsfModule.check_exploit",
+        return_value={"job_id": 10, "uuid": "CzwatViyCW2tJABg0FiYfHeC"},
+    )
+    mocker.patch(
+        "pymetasploit3.msfrpc.JobManager.info_by_uuid",
+        return_value={"status": "completed", "result": None},
+    )
+    agent_instance.settings.args = [
+        utils_definitions.Arg(
+            name="module",
+            type="string",
+            value=json.dumps("exploit/unix/misc/distcc_exec").encode(),
+        )
+    ]
+    mocker.patch(
+        "pymetasploit3.msfrpc.MsfConsole.run_module_with_output",
+        return_value=exploit_console_output,
+    )
+
+    agent_instance.process(metasploitable_scan_message)
 
     assert len(agent_mock) == 1

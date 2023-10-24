@@ -24,7 +24,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-AGENT_ARGS = ["module"]
+AGENT_ARGS = ["module", "RHOSTS", "VHOST", "RPORT"]
 SCHEME_TO_PORT = {"http": 80, "https": 443}
 DEFAULT_PORT = 443
 MODULE_TIMEOUT = 180
@@ -78,20 +78,21 @@ class MetasploitAgent(
         module_type, module_name = module.split("/", 1)
         try:
             selected_module = self.client.modules.use(module_type, module_name)
-        except msfrpc.MsfRpcError:
-            raise ModuleError("Specified module does not exist")
+        except msfrpc.MsfRpcError as exc:
+            raise ModuleError("Specified module does not exist") from exc
 
         logger.info("Selected metasploit module: %s", selected_module.modulename)
         if "RHOSTS" in selected_module.required:
             selected_module["RHOSTS"] = rhost
             if "VHOST" in selected_module.required:
                 selected_module["VHOST"] = vhost
+            if "RPORT" in selected_module.missing_required:
+                selected_module["RPORT"] = rport
         elif "DOMAIN" in selected_module.required:
             selected_module["DOMAIN"] = rhost
         else:
             raise ArgumentError(
-                "Argument not implemented, accepted args: %s"
-                % str(selected_module.required)
+                f"Argument not implemented, accepted args: {str(selected_module.required)}"
             )
 
         extra_args = [arg_name for arg_name in self.args if arg_name not in AGENT_ARGS]
@@ -101,10 +102,9 @@ class MetasploitAgent(
 
         if len(selected_module.missing_required) > 0:
             raise ArgumentError(
-                "The following arguments are missing: %s",
-                str(selected_module.missing_required),
+                f"The following arguments are missing: {str(selected_module.missing_required)}"
             )
-        cid = self.client.consoles.console().cid
+
         if module_type == "exploit":
             mode = "check"
             job = selected_module.check_exploit()
@@ -117,21 +117,23 @@ class MetasploitAgent(
         job_uuid = job["uuid"]
         started_timestamp = time.time()
         while True:
-            status = self.client.jobs.info_by_uuid(job_uuid)["status"]
+            job_result = self.client.jobs.info_by_uuid(job_uuid)
+            status = job_result["status"]
             if status == "completed":
                 break
             if time.time() - started_timestamp > MODULE_TIMEOUT:
-                raise CheckError("Timeout while running job: %s" % job_uuid)
+                raise CheckError(f"Timeout while running job: {job_uuid}")
             time.sleep(5)
-        results = self.client.jobs.info_by_uuid(job_uuid)["result"]
+        results = job_result["result"]
 
         if isinstance(results, dict) and results.get("code") == "safe":
             return
 
-        technical_detail = f'Using `{module_type}` module `{module_name}`\n'
+        technical_detail = f"Using `{module_type}` module `{module_name}`\n"
+        technical_detail += f"Target: {vhost}\n"
 
-        if isinstance(results, list):
-            technical_detail += "\n".join(results)
+        if isinstance(results, dict) and results.get("code") == "vulnerable":
+            technical_detail += f'Message: {results["message"]}'
         else:
             cid = self.client.consoles.console().cid
             console_output = self.client.consoles.console(cid).run_module_with_output(
@@ -140,7 +142,7 @@ class MetasploitAgent(
             module_output = console_output.split("WORKSPACE => Ostorlab")[1]
             if "[-]" in module_output:
                 return
-            technical_detail += module_output
+            technical_detail += f"Message: {module_output}"
 
         self.report_vulnerability(
             entry=kb.KB.WEB_GENERIC,
@@ -173,7 +175,7 @@ class MetasploitAgent(
             port = SCHEME_TO_PORT.get(scheme) or DEFAULT_PORT
             return host, port
         else:
-            raise NotImplemented("Received invalid target")
+            raise NotImplementedError
 
 
 if __name__ == "__main__":

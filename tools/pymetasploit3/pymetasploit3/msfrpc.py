@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 
-from numbers import Number
-from pymetasploit3.utils import *
-import requests
-import uuid
-import time
 import re
-import random
+import time
+import uuid
+from numbers import Number
+
 import msgpack
+import requests
 import requests.packages.urllib3
 from retry import retry
+
+from pymetasploit3.utils import *
 
 requests.packages.urllib3.disable_warnings()
 

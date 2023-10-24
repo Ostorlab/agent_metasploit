@@ -1,25 +1,25 @@
 """Pytest fixtures for agent Metasploit"""
 import pathlib
 import random
-import string
 import subprocess
 
 import pytest
 from ostorlab.agent import definitions as agent_definitions
 from ostorlab.agent.message import message
 from ostorlab.runtimes import definitions as runtime_definitions
-from pymetasploit3 import msfrpc
 from pytest_mock import plugin
 
 from agent import metasploit_agent as msf_agent
+from pymetasploit3 import msfrpc
 
 MSFRPCD_PWD = "Ostorlab123"
 
 
 @pytest.fixture(scope="module")
 def msfrpc_client() -> msfrpc.MsfRpcClient:
+    """Start msfrpcd and connect to it"""
     command = ["msfrpcd", "-P", MSFRPCD_PWD, "-p", "55552"]
-    subprocess.run(command, shell=True, check=True, capture_output=True)
+    subprocess.run(command, capture_output=True)
     client = msfrpc.MsfRpcClient(MSFRPCD_PWD, ssl=True, port=55552)
     return client
 
@@ -34,7 +34,7 @@ def agent_instance(
     with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:
         definition = agent_definitions.AgentDefinition.from_yaml(yaml_o)
         settings = runtime_definitions.AgentSettings(
-            key="agent/ostorlab/semgrep",
+            key="agent/ostorlab/metasploit",
             bus_url="NA",
             bus_exchange_topic="NA",
             args=[],
@@ -45,7 +45,7 @@ def agent_instance(
 
 
 @pytest.fixture()
-def safe_scan_message() -> message.Message:
+def scan_message() -> message.Message:
     """Creates a message of type v3.asset.domain_name.service to be used by the agent for testing purposes."""
     selector = "v3.asset.domain_name.service"
     msg_data = {"schema": "https", "name": "www.google.com", "port": 443}
@@ -53,15 +53,15 @@ def safe_scan_message() -> message.Message:
 
 
 @pytest.fixture()
-def vulnerable_scan_message() -> message.Message:
+def metasploitable_scan_message() -> message.Message:
     """Creates a message of type v3.asset.domain_name.service to be used by the agent for testing purposes."""
-    selector = "v3.asset.domain_name.service"
-    msg_data = {"schema": "http", "name": "www.google.com", "port": 80}
+    selector = "v3.asset.ip.v4"
+    msg_data = {"host": "192.168.1.17", "mask": "32", "version": 4}
     return message.Message.from_data(selector, data=msg_data)
 
 
 @pytest.fixture()
-def msf_console_output() -> str:
+def auxiliary_console_output() -> str:
     return """VERBOSE => false
 RPORT => 80
 SSL => false
@@ -113,4 +113,25 @@ WORKSPACE => Ostorlab
 [+] Joomla version: 1.0
 [*] Scanned 1 of 1 hosts (100% complete)
 [*] Auxiliary module execution completed
+"""
+
+
+@pytest.fixture()
+def exploit_console_output() -> str:
+    return """[*] No payload configured, defaulting to cmd/unix/reverse_bash
+VERBOSE => false
+WfsDelay => 2
+EnableContextEncoding => false
+DisablePayloadHandler => true
+RPORT => 3632
+SSL => false
+SSLVersion => Auto
+SSLVerifyMode => PEER
+ConnectTimeout => 10
+TCP::max_send_size => 0
+TCP::send_delay => 0
+RHOSTS => 192.168.1.17
+TARGET => 0
+WORKSPACE => Ostorlab
+[+] 192.168.1.17:3632 - The target is vulnerable.
 """
