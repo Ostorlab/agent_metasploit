@@ -19,7 +19,7 @@ MSFRPCD_PWD = "Ostorlab123"
 def msfrpc_client() -> msfrpc.MsfRpcClient:
     """Start msfrpcd and connect to it"""
     command = ["msfrpcd", "-P", MSFRPCD_PWD, "-p", "55552"]
-    subprocess.run(command, capture_output=True, check=False)
+    subprocess.run(command, capture_output=False, check=False)
     client = msfrpc.MsfRpcClient(MSFRPCD_PWD, ssl=True, port=55552)
     return client
 
