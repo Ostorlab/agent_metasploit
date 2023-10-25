@@ -60,6 +60,7 @@ class MetasploitAgent(
         vuln_mixin.AgentReportVulnMixin.__init__(self)
         persist_mixin.AgentPersistMixin.__init__(self, agent_settings)
         self.client = utils.initialize_msf_rpc()
+        self.cid = self.client.consoles.console().cid
 
     def process(self, message: m.Message) -> None:
         """Trigger Source map enumeration and emit found findings
@@ -135,8 +136,7 @@ class MetasploitAgent(
         if isinstance(results, dict) and results.get("code") == "vulnerable":
             technical_detail += f'Message: {results["message"]}'
         else:
-            cid = self.client.consoles.console().cid
-            console_output = self.client.consoles.console(cid).run_module_with_output(
+            console_output = self.client.consoles.console(self.cid).run_module_with_output(
                 selected_module, mode=mode
             )
             module_output = console_output.split("WORKSPACE => Ostorlab")[1]
