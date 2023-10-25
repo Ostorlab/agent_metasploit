@@ -40,7 +40,6 @@ jobs:
           curl https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb > msfinstall
           chmod +x msfinstall
           sudo ./msfinstall
-          msfrpcd -P Ostorlab123 -p 55552
       - name: Install dependencies.
         run: |
           python -m pip install --upgrade pip

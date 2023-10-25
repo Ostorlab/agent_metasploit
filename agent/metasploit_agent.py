@@ -136,9 +136,9 @@ class MetasploitAgent(
         if isinstance(results, dict) and results.get("code") == "vulnerable":
             technical_detail += f'Message: {results["message"]}'
         else:
-            console_output = self.client.consoles.console(self.cid).run_module_with_output(
-                selected_module, mode=mode
-            )
+            console_output = self.client.consoles.console(
+                self.cid
+            ).run_module_with_output(selected_module, mode=mode)
             module_output = console_output.split("WORKSPACE => Ostorlab")[1]
             if "[-]" in module_output:
                 return
