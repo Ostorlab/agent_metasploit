@@ -74,7 +74,6 @@ class MetasploitAgent(
             raise ArgumentError("Metasploit module must be specified.")
 
         vhost, rport = self._prepare_target(message)
-        rhost = socket.gethostbyname(vhost)
 
         module_type, module_name = module.split("/", 1)
         try:
@@ -83,28 +82,7 @@ class MetasploitAgent(
             raise ModuleError("Specified module does not exist") from exc
 
         logger.info("Selected metasploit module: %s", selected_module.modulename)
-        if "RHOSTS" in selected_module.required:
-            selected_module["RHOSTS"] = rhost
-            if "VHOST" in selected_module.required:
-                selected_module["VHOST"] = vhost
-            if "RPORT" in selected_module.missing_required:
-                selected_module["RPORT"] = rport
-        elif "DOMAIN" in selected_module.required:
-            selected_module["DOMAIN"] = rhost
-        else:
-            raise ArgumentError(
-                f"Argument not implemented, accepted args: {str(selected_module.required)}"
-            )
-
-        extra_args = [arg_name for arg_name in self.args if arg_name not in AGENT_ARGS]
-        for arg in extra_args:
-            if arg in selected_module.required:
-                selected_module[arg] = self.args.get(arg)
-
-        if len(selected_module.missing_required) > 0:
-            raise ArgumentError(
-                f"The following arguments are missing: {str(selected_module.missing_required)}"
-            )
+        selected_module = self._set_module_args(selected_module, vhost, rport)
 
         if module_type == "exploit":
             mode = "check"
@@ -149,6 +127,33 @@ class MetasploitAgent(
             technical_detail=technical_detail,
             risk_rating=vuln_mixin.RiskRating.INFO,
         )
+
+    def _set_module_args(self, selected_module, vhost, rport) -> msfrpc.MsfModule:
+        rhost = socket.gethostbyname(vhost)
+        if "RHOSTS" in selected_module.required:
+            selected_module["RHOSTS"] = rhost
+            if "VHOST" in selected_module.required:
+                selected_module["VHOST"] = vhost
+            if "RPORT" in selected_module.missing_required:
+                selected_module["RPORT"] = rport
+        elif "DOMAIN" in selected_module.required:
+            selected_module["DOMAIN"] = rhost
+        else:
+            raise ArgumentError(
+                f"Argument not implemented, accepted args: {str(selected_module.required)}"
+            )
+
+        extra_args = [arg_name for arg_name in self.args if arg_name not in AGENT_ARGS]
+        for arg in extra_args:
+            if arg in selected_module.required:
+                selected_module[arg] = self.args.get(arg)
+
+        if len(selected_module.missing_required) > 0:
+            raise ArgumentError(
+                f"The following arguments are missing: {str(selected_module.missing_required)}"
+            )
+
+        return selected_module
 
     def _get_port(self, message: m.Message) -> int:
         """Returns the port to be used for the target."""
