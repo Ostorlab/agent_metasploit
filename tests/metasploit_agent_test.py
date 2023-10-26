@@ -71,8 +71,8 @@ def testAuxiliaryExecute_whenVulnerable_returnFindings(
 
     assert len(agent_mock) == 1
     vulnerability_finding = agent_mock[0].data
-    assert vulnerability_finding["title"] == "Generic Web Entry"
-    assert vulnerability_finding["risk_rating"] == "INFO"
+    assert vulnerability_finding["title"] == "Metasploit vulnerability detection"
+    assert vulnerability_finding["risk_rating"] == "HIGH"
     assert vulnerability_finding["technical_detail"] == (
         "Using `auxiliary` module `scanner/http/joomla_version`\n"
         "Target: www.google.com\n"
@@ -120,8 +120,8 @@ def testExploitCheck_whenVulnerable_returnFindings(
 
     assert len(agent_mock) == 1
     vulnerability_finding = agent_mock[0].data
-    assert vulnerability_finding["title"] == "Generic Web Entry"
-    assert vulnerability_finding["risk_rating"] == "INFO"
+    assert vulnerability_finding["title"] == "Metasploit vulnerability detection"
+    assert vulnerability_finding["risk_rating"] == "HIGH"
     assert vulnerability_finding["technical_detail"] == (
         "Using `exploit` module `unix/misc/distcc_exec`\n"
         "Target: 192.168.1.17\n"
@@ -161,8 +161,8 @@ def testExploitCheck_whenVulnerable_returnConsoleOutput(
 
     assert len(agent_mock) == 1
     vulnerability_finding = agent_mock[0].data
-    assert vulnerability_finding["title"] == "Generic Web Entry"
-    assert vulnerability_finding["risk_rating"] == "INFO"
+    assert vulnerability_finding["title"] == "Metasploit vulnerability detection"
+    assert vulnerability_finding["risk_rating"] == "HIGH"
     assert vulnerability_finding["technical_detail"] == (
         "Using `exploit` module `unix/misc/distcc_exec`\n"
         "Target: 192.168.1.17\n"

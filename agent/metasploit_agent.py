@@ -126,10 +126,12 @@ class MetasploitAgent(
                 return
             technical_detail += f"Message: {module_output}"
 
+        entry = kb.KB.WEB_GENERIC
+        entry.title = "Metasploit vulnerability detection"
         self.report_vulnerability(
-            entry=kb.KB.WEB_GENERIC,
+            entry=entry,
             technical_detail=technical_detail,
-            risk_rating=vuln_mixin.RiskRating.INFO,
+            risk_rating=vuln_mixin.RiskRating.HIGH,
         )
 
     def _set_module_args(self, selected_module, vhost, rport) -> msfrpc.MsfModule:
