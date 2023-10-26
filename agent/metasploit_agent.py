@@ -145,7 +145,7 @@ class MetasploitAgent(
         selected_module["RHOSTS"] = rhost
         if "VHOST" in selected_module.options:
             selected_module["VHOST"] = vhost
-        if "RPORT" in selected_module.options:
+        if "RPORT" in selected_module.missing_required:
             selected_module["RPORT"] = rport
 
         extra_args = [arg_name for arg_name in self.args if arg_name not in AGENT_ARGS]
