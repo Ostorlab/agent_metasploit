@@ -38,6 +38,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirement.txt
           python -m pip install -r tests/test-requirement.txt
+          python -m pip install -e tools/pymetasploit3
       - name: Runnning tests with pytest.
         run: |
           set -o pipefail
