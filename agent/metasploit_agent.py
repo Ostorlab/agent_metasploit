@@ -95,15 +95,19 @@ class MetasploitAgent(
 
         job_uuid = job["uuid"]
         started_timestamp = time.time()
+        results = None
         while True:
             job_result = self.client.jobs.info_by_uuid(job_uuid)
             status = job_result["status"]
             if status == "completed":
+                results = job_result["result"]
+                break
+            if status == "errored":
+                logger.error("Encountered an unexpected error: %s", job_result["error"])
                 break
             if time.time() - started_timestamp > MODULE_TIMEOUT:
                 raise CheckError(f"Timeout while running job: {job_uuid}")
             time.sleep(5)
-        results = job_result["result"]
 
         if isinstance(results, dict) and results.get("code") == "safe":
             return
@@ -130,18 +134,15 @@ class MetasploitAgent(
 
     def _set_module_args(self, selected_module, vhost, rport) -> msfrpc.MsfModule:
         rhost = socket.gethostbyname(vhost)
-        if "RHOSTS" in selected_module.required:
-            selected_module["RHOSTS"] = rhost
-            if "VHOST" in selected_module.required:
-                selected_module["VHOST"] = vhost
-            if "RPORT" in selected_module.missing_required:
-                selected_module["RPORT"] = rport
-        elif "DOMAIN" in selected_module.required:
-            selected_module["DOMAIN"] = rhost
-        else:
+        if "RHOSTS" not in selected_module.required:
             raise ArgumentError(
                 f"Argument not implemented, accepted args: {str(selected_module.required)}"
             )
+        selected_module["RHOSTS"] = rhost
+        if "VHOST" in selected_module.options:
+            selected_module["VHOST"] = vhost
+        if "RPORT" in selected_module.options:
+            selected_module["RPORT"] = rport
 
         extra_args = [arg_name for arg_name in self.args if arg_name not in AGENT_ARGS]
         for arg in extra_args:

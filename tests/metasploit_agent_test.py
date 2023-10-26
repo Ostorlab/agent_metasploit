@@ -70,6 +70,18 @@ def testAuxiliaryExecute_whenVulnerable_returnFindings(
     agent_instance.process(scan_message)
 
     assert len(agent_mock) == 1
+    vulnerability_finding = agent_mock[0].data
+    assert vulnerability_finding["title"] == "Generic Web Entry"
+    assert vulnerability_finding["risk_rating"] == "INFO"
+    assert vulnerability_finding["technical_detail"] == (
+        "Using `auxiliary` module `scanner/http/joomla_version`\n"
+        "Target: www.google.com\n"
+        "Message: \n"
+        "[*] Server: Apache\n"
+        "[+] Joomla version: 1.0\n"
+        "[*] Scanned 1 of 1 hosts (100% complete)\n"
+        "[*] Auxiliary module execution completed\n"
+    )
 
 
 def testExploitCheck_whenVulnerable_returnFindings(
@@ -107,6 +119,14 @@ def testExploitCheck_whenVulnerable_returnFindings(
     agent_instance.process(metasploitable_scan_message)
 
     assert len(agent_mock) == 1
+    vulnerability_finding = agent_mock[0].data
+    assert vulnerability_finding["title"] == "Generic Web Entry"
+    assert vulnerability_finding["risk_rating"] == "INFO"
+    assert vulnerability_finding["technical_detail"] == (
+        "Using `exploit` module `unix/misc/distcc_exec`\n"
+        "Target: 192.168.1.17\n"
+        "Message: The target is vulnerable."
+    )
 
 
 def testExploitCheck_whenVulnerable_returnConsoleOutput(
@@ -140,3 +160,12 @@ def testExploitCheck_whenVulnerable_returnConsoleOutput(
     agent_instance.process(metasploitable_scan_message)
 
     assert len(agent_mock) == 1
+    vulnerability_finding = agent_mock[0].data
+    assert vulnerability_finding["title"] == "Generic Web Entry"
+    assert vulnerability_finding["risk_rating"] == "INFO"
+    assert vulnerability_finding["technical_detail"] == (
+        "Using `exploit` module `unix/misc/distcc_exec`\n"
+        "Target: 192.168.1.17\n"
+        "Message: \n"
+        "[+] 192.168.1.17:3632 - The target is vulnerable.\n"
+    )

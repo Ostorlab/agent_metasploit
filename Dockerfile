@@ -4,6 +4,8 @@ RUN apt-get update && apt-get install -y python3 \
                                          metasploit-framework
 COPY requirement.txt /requirement.txt
 RUN python3 -m pip install -r /requirement.txt
+COPY tools /tools
+RUN pip install -e /tools/pymetasploit3
 RUN mkdir -p /app/agent
 ENV PYTHONPATH=/app
 COPY agent /app/agent
