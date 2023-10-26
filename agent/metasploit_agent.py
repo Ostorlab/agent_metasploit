@@ -134,7 +134,7 @@ class MetasploitAgent(
             risk_rating=vuln_mixin.RiskRating.HIGH,
         )
 
-    def _set_module_args(self, selected_module, vhost, rport) -> msfrpc.MsfModule:
+    def _set_module_args(self, selected_module: msfrpc.MsfModule, vhost: str, rport: int) -> msfrpc.MsfModule:
         rhost = socket.gethostbyname(vhost)
         if "RHOSTS" not in selected_module.required:
             raise ArgumentError(
