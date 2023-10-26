@@ -12,11 +12,11 @@ from pymetasploit3.utils import parseargs
 class MsfRpc(InteractiveConsole):
     def __init__(self, password, **kwargs):
         self.client = MsfRpcClient(password, **kwargs)
-        InteractiveConsole.__init__(self, {'rpc' : self.client}, '<console>')
-        self.init_history(path.expanduser('~/.msfrpc_history'))
+        InteractiveConsole.__init__(self, {"rpc": self.client}, "<console>")
+        self.init_history(path.expanduser("~/.msfrpc_history"))
 
     def init_history(self, histfile):
-        readline.parse_and_bind('tab: complete')
+        readline.parse_and_bind("tab: complete")
         if hasattr(readline, "read_history_file"):
             try:
                 readline.read_history_file(histfile)
@@ -28,11 +28,11 @@ class MsfRpc(InteractiveConsole):
         readline.write_history_file(histfile)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     o = parseargs()
     try:
-        m = MsfRpc(o.__dict__.pop('password'), **o.__dict__)
-        m.interact('')
+        m = MsfRpc(o.__dict__.pop("password"), **o.__dict__)
+        m.interact("")
     except MsfRpcError as m:
         print(str(m))
         exit(-1)

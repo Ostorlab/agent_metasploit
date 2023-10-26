@@ -10,44 +10,45 @@ import random
 import msgpack
 import requests.packages.urllib3
 from retry import retry
+
 requests.packages.urllib3.disable_warnings()
 
 __all__ = [
-    'MsfRpcError',
-    'MsfRpcMethod',
-    'MsfPlugins',
-    'MsfRpcClient',
-    'MsfTable',
-    'NotesTable',
-    'LootsTable',
-    'CredsTable',
-    'HostsTable',
-    'ServicesTable',
-    'VulnsTable',
-    'EventsTable',
-    'ClientsTable',
-    'Workspace',
-    'MsfManager',
-    'WorkspaceManager',
-    'DbManager',
-    'AuthManager',
-    'PluginManager',
-    'JobManager',
-    'CoreManager',
-    'MsfModule',
-    'ExploitModule',
-    'PostModule',
-    'EncoderModule',
-    'AuxiliaryModule',
-    'PayloadModule',
-    'NopModule',
-    'ModuleManager',
-    'MsfSession',
-    'MeterpreterSession',
-    'ShellSession',
-    'SessionManager',
-    'MsfConsole',
-    'ConsoleManager'
+    "MsfRpcError",
+    "MsfRpcMethod",
+    "MsfPlugins",
+    "MsfRpcClient",
+    "MsfTable",
+    "NotesTable",
+    "LootsTable",
+    "CredsTable",
+    "HostsTable",
+    "ServicesTable",
+    "VulnsTable",
+    "EventsTable",
+    "ClientsTable",
+    "Workspace",
+    "MsfManager",
+    "WorkspaceManager",
+    "DbManager",
+    "AuthManager",
+    "PluginManager",
+    "JobManager",
+    "CoreManager",
+    "MsfModule",
+    "ExploitModule",
+    "PostModule",
+    "EncoderModule",
+    "AuxiliaryModule",
+    "PayloadModule",
+    "NopModule",
+    "ModuleManager",
+    "MsfSession",
+    "MeterpreterSession",
+    "ShellSession",
+    "SessionManager",
+    "MsfConsole",
+    "ConsoleManager",
 ]
 
 
@@ -56,112 +57,112 @@ class MsfRpcError(Exception):
 
 
 class MsfRpcMethod(object):
-    AuthLogin = 'auth.login'
-    AuthLogout = 'auth.logout'
-    AuthTokenList = 'auth.token_list'
-    AuthTokenAdd = 'auth.token_add'
-    AuthTokenGenerate = 'auth.token_generate'
-    AuthTokenRemove = 'auth.token_remove'
-    ConsoleCreate = 'console.create'
-    ConsoleList = 'console.list'
-    ConsoleDestroy = 'console.destroy'
-    ConsoleRead = 'console.read'
-    ConsoleWrite = 'console.write'
-    ConsoleTabs = 'console.tabs'
-    ConsoleSessionKill = 'console.session_kill'
-    ConsoleSessionDetach = 'console.session_detach'
-    CoreVersion = 'core.version'
-    CoreStop = 'core.stop'
-    CoreSetG = 'core.setg'
-    CoreUnsetG = 'core.unsetg'
-    CoreSave = 'core.save'
-    CoreReloadModules = 'core.reload_modules'
-    CoreModuleStats = 'core.module_stats'
-    CoreAddModulePath = 'core.add_module_path'
-    CoreThreadList = 'core.thread_list'
-    CoreThreadKill = 'core.thread_kill'
-    DbHosts = 'db.hosts'
-    DbServices = 'db.services'
-    DbVulns = 'db.vulns'
-    DbWorkspaces = 'db.workspaces'
-    DbCurrentWorkspace = 'db.current_workspace'
-    DbGetWorkspace = 'db.get_workspace'
-    DbSetWorkspace = 'db.set_workspace'
-    DbDelWorkspace = 'db.del_workspace'
-    DbAddWorkspace = 'db.add_workspace'
-    DbGetHost = 'db.get_host'
-    DbReportHost = 'db.report_host'
-    DbReportService = 'db.report_service'
-    DbGetService = 'db.get_service'
-    DbGetNote = 'db.get_note'
-    DbGetClient = 'db.get_client'
-    DbReportClient = 'db.report_client'
-    DbReportNote = 'db.report_note'
-    DbNotes = 'db.notes'
-    DbGetRef = 'db.get_ref'
-    DbDelVuln = 'db.del_vuln'
-    DbDelNote = 'db.del_note'
-    DbDelService = 'db.del_service'
-    DbDelHost = 'db.del_host'
-    DbReportVuln = 'db.report_vuln'
-    DbEvents = 'db.events'
-    DbReportEvent = 'db.report_event'
-    DbReportLoot = 'db.report_loot'
-    DbLoots = 'db.loots'
-    DbReportCred = 'db.report_cred'
-    DbCreds = 'db.creds'
-    DbImportData = 'db.import_data'
-    DbGetVuln = 'db.get_vuln'
-    DbClients = 'db.clients'
-    DbDelClient = 'db.del_client'
-    DbDriver = 'db.driver'
-    DbConnect = 'db.connect'
-    DbStatus = 'db.status'
-    DbDisconnect = 'db.disconnect'
-    JobList = 'job.list'
-    JobStop = 'job.stop'
-    JobInfo = 'job.info'
-    ModuleExploits = 'module.exploits'
-    ModuleEvasion = 'module.evasion'
-    ModuleAuxiliary = 'module.auxiliary'
-    ModulePayloads = 'module.payloads'
-    ModuleEncoders = 'module.encoders'
-    ModuleNops = 'module.nops'
-    ModulePlatforms = 'module.platforms'
-    ModulePost = 'module.post'
-    ModuleInfo = 'module.info'
-    ModuleCompatiblePayloads = 'module.compatible_payloads'
-    ModuleCompatibleSessions = 'module.compatible_sessions'
-    ModuleTargetCompatiblePayloads = 'module.target_compatible_payloads'
-    ModuleOptions = 'module.options'
-    ModuleExecute = 'module.execute'
-    ModuleEncodeFormats = 'module.encode_formats'
-    ModuleEncode = 'module.encode'
-    ModuleSearch = 'module.search'
-    ModuleCompatibleSessions = 'module.compatible_sessions'
-    ModuleCheck = 'module.check'
-    ModuleResults = 'module.results'
-    PluginLoad = 'plugin.load'
-    PluginUnload = 'plugin.unload'
-    PluginLoaded = 'plugin.loaded'
-    SessionList = 'session.list'
-    SessionStop = 'session.stop'
-    SessionShellRead = 'session.shell_read'
-    SessionShellWrite = 'session.shell_write'
-    SessionShellUpgrade = 'session.shell_upgrade'
-    SessionMeterpreterRead = 'session.meterpreter_read'
-    SessionRingRead = 'session.ring_read'
-    SessionRingPut = 'session.ring_put'
-    SessionRingLast = 'session.ring_last'
-    SessionRingClear = 'session.ring_clear'
-    SessionMeterpreterWrite = 'session.meterpreter_write'
-    SessionMeterpreterSessionDetach = 'session.meterpreter_session_detach'
-    SessionMeterpreterSessionKill = 'session.meterpreter_session_kill'
-    SessionMeterpreterTabs = 'session.meterpreter_tabs'
-    SessionMeterpreterRunSingle = 'session.meterpreter_run_single'
-    SessionMeterpreterScript = 'session.meterpreter_script'
-    SessionMeterpreterDirectorySeparator = 'session.meterpreter_directory_separator'
-    SessionCompatibleModules = 'session.compatible_modules'
+    AuthLogin = "auth.login"
+    AuthLogout = "auth.logout"
+    AuthTokenList = "auth.token_list"
+    AuthTokenAdd = "auth.token_add"
+    AuthTokenGenerate = "auth.token_generate"
+    AuthTokenRemove = "auth.token_remove"
+    ConsoleCreate = "console.create"
+    ConsoleList = "console.list"
+    ConsoleDestroy = "console.destroy"
+    ConsoleRead = "console.read"
+    ConsoleWrite = "console.write"
+    ConsoleTabs = "console.tabs"
+    ConsoleSessionKill = "console.session_kill"
+    ConsoleSessionDetach = "console.session_detach"
+    CoreVersion = "core.version"
+    CoreStop = "core.stop"
+    CoreSetG = "core.setg"
+    CoreUnsetG = "core.unsetg"
+    CoreSave = "core.save"
+    CoreReloadModules = "core.reload_modules"
+    CoreModuleStats = "core.module_stats"
+    CoreAddModulePath = "core.add_module_path"
+    CoreThreadList = "core.thread_list"
+    CoreThreadKill = "core.thread_kill"
+    DbHosts = "db.hosts"
+    DbServices = "db.services"
+    DbVulns = "db.vulns"
+    DbWorkspaces = "db.workspaces"
+    DbCurrentWorkspace = "db.current_workspace"
+    DbGetWorkspace = "db.get_workspace"
+    DbSetWorkspace = "db.set_workspace"
+    DbDelWorkspace = "db.del_workspace"
+    DbAddWorkspace = "db.add_workspace"
+    DbGetHost = "db.get_host"
+    DbReportHost = "db.report_host"
+    DbReportService = "db.report_service"
+    DbGetService = "db.get_service"
+    DbGetNote = "db.get_note"
+    DbGetClient = "db.get_client"
+    DbReportClient = "db.report_client"
+    DbReportNote = "db.report_note"
+    DbNotes = "db.notes"
+    DbGetRef = "db.get_ref"
+    DbDelVuln = "db.del_vuln"
+    DbDelNote = "db.del_note"
+    DbDelService = "db.del_service"
+    DbDelHost = "db.del_host"
+    DbReportVuln = "db.report_vuln"
+    DbEvents = "db.events"
+    DbReportEvent = "db.report_event"
+    DbReportLoot = "db.report_loot"
+    DbLoots = "db.loots"
+    DbReportCred = "db.report_cred"
+    DbCreds = "db.creds"
+    DbImportData = "db.import_data"
+    DbGetVuln = "db.get_vuln"
+    DbClients = "db.clients"
+    DbDelClient = "db.del_client"
+    DbDriver = "db.driver"
+    DbConnect = "db.connect"
+    DbStatus = "db.status"
+    DbDisconnect = "db.disconnect"
+    JobList = "job.list"
+    JobStop = "job.stop"
+    JobInfo = "job.info"
+    ModuleExploits = "module.exploits"
+    ModuleEvasion = "module.evasion"
+    ModuleAuxiliary = "module.auxiliary"
+    ModulePayloads = "module.payloads"
+    ModuleEncoders = "module.encoders"
+    ModuleNops = "module.nops"
+    ModulePlatforms = "module.platforms"
+    ModulePost = "module.post"
+    ModuleInfo = "module.info"
+    ModuleCompatiblePayloads = "module.compatible_payloads"
+    ModuleCompatibleSessions = "module.compatible_sessions"
+    ModuleTargetCompatiblePayloads = "module.target_compatible_payloads"
+    ModuleOptions = "module.options"
+    ModuleExecute = "module.execute"
+    ModuleEncodeFormats = "module.encode_formats"
+    ModuleEncode = "module.encode"
+    ModuleSearch = "module.search"
+    ModuleCompatibleSessions = "module.compatible_sessions"
+    ModuleCheck = "module.check"
+    ModuleResults = "module.results"
+    PluginLoad = "plugin.load"
+    PluginUnload = "plugin.unload"
+    PluginLoaded = "plugin.loaded"
+    SessionList = "session.list"
+    SessionStop = "session.stop"
+    SessionShellRead = "session.shell_read"
+    SessionShellWrite = "session.shell_write"
+    SessionShellUpgrade = "session.shell_upgrade"
+    SessionMeterpreterRead = "session.meterpreter_read"
+    SessionRingRead = "session.ring_read"
+    SessionRingPut = "session.ring_put"
+    SessionRingLast = "session.ring_last"
+    SessionRingClear = "session.ring_clear"
+    SessionMeterpreterWrite = "session.meterpreter_write"
+    SessionMeterpreterSessionDetach = "session.meterpreter_session_detach"
+    SessionMeterpreterSessionKill = "session.meterpreter_session_kill"
+    SessionMeterpreterTabs = "session.meterpreter_tabs"
+    SessionMeterpreterRunSingle = "session.meterpreter_run_single"
+    SessionMeterpreterScript = "session.meterpreter_script"
+    SessionMeterpreterDirectorySeparator = "session.meterpreter_directory_separator"
+    SessionCompatibleModules = "session.compatible_modules"
 
 
 class MsfPlugins(object):
@@ -187,22 +188,21 @@ class MsfAuthError(MsfError):
 
 
 class MsfRpcClient(object):
-
     def __init__(self, password, **kwargs):
-        self.uri = kwargs.get('uri', '/api/')
-        self.port = kwargs.get('port', 55553)
-        self.host = kwargs.get('server', '127.0.0.1')
-        self.ssl = kwargs.get('ssl', False)
-        self.token = kwargs.get('token')
-        self.encoding = kwargs.get('encoding', 'utf-8')
+        self.uri = kwargs.get("uri", "/api/")
+        self.port = kwargs.get("port", 55553)
+        self.host = kwargs.get("server", "127.0.0.1")
+        self.ssl = kwargs.get("ssl", False)
+        self.token = kwargs.get("token")
+        self.encoding = kwargs.get("encoding", "utf-8")
         self.headers = {"Content-type": "binary/message-pack"}
         if self.token is None:
-            self.login(kwargs.get('username', 'msf'), password)
+            self.login(kwargs.get("username", "msf"), password)
 
     def call(self, method, opts=None, is_raw=False):
         if not isinstance(opts, list):
             opts = []
-        if method != 'auth.login':
+        if method != "auth.login":
             if self.token is None:
                 raise MsfAuthError("MsfRPC: Not Authenticated")
 
@@ -224,7 +224,9 @@ class MsfRpcClient(object):
         if is_raw:
             return r.content
 
-        return convert(decode(r.content), self.encoding)  # convert all keys/vals to utf8
+        return convert(
+            decode(r.content), self.encoding
+        )  # convert all keys/vals to utf8
 
     @retry(tries=3, delay=1, backoff=2)
     def post_request(self, url, payload):
@@ -233,8 +235,8 @@ class MsfRpcClient(object):
     def login(self, user, password):
         auth = self.call(MsfRpcMethod.AuthLogin, [user, password])
         try:
-            if auth['result'] == 'success':
-                self.token = auth['token']
+            if auth["result"] == "success":
+                self.token = auth["token"]
                 token = self.add_perm_token()
                 self.token = token
                 return True
@@ -320,26 +322,25 @@ class MsfRpcClient(object):
 
 
 class MsfTable(object):
-
     def __init__(self, rpc, wname):
         self.rpc = rpc
         self.name = wname
 
     def dbreport(self, atype, attrs):
-        attrs.update({'workspace': self.name})
-        return self.rpc.call('db.report_%s' % atype, [attrs])
+        attrs.update({"workspace": self.name})
+        return self.rpc.call("db.report_%s" % atype, [attrs])
 
     def dbdel(self, atype, attrs):
-        attrs.update({'workspace': self.name})
-        return self.rpc.call('db.del_%s' % atype, [attrs])
+        attrs.update({"workspace": self.name})
+        return self.rpc.call("db.del_%s" % atype, [attrs])
 
     def dbget(self, atype, attrs):
-        attrs.update({'workspace': self.name})
-        return self.rpc.call('db.get_%s' % atype, [attrs])[atype]
+        attrs.update({"workspace": self.name})
+        return self.rpc.call("db.get_%s" % atype, [attrs])[atype]
 
     def records(self, atypes, **kwargs):
-        kwargs.update({'workspace': self.name})
-        return self.rpc.call('db.%s' % atypes, [kwargs])[atypes]
+        kwargs.update({"workspace": self.name})
+        return self.rpc.call("db.%s" % atypes, [kwargs])[atypes]
 
     @property
     def list(self):
@@ -358,10 +359,9 @@ class MsfTable(object):
 
 
 class NotesTable(MsfTable):
-
     @property
     def list(self):
-        return super(NotesTable, self).records('notes')
+        return super(NotesTable, self).records("notes")
 
     def find(self, **kwargs):
         """
@@ -376,9 +376,9 @@ class NotesTable(MsfTable):
         - ports : the port associated with the note.
         - proto : the protocol associated with the note.
         """
-        if 'ports' in kwargs:
-            kwargs['port'] = True
-        return super(NotesTable, self).records('notes', **kwargs)
+        if "ports" in kwargs:
+            kwargs["port"] = True
+        return super(NotesTable, self).records("notes", **kwargs)
 
     def report(self, rtype, data, **kwargs):
         """
@@ -404,9 +404,9 @@ class NotesTable(MsfTable):
         it will be created. If 'host' and 'service' are all omitted, the new Note
         will be associated with the current 'workspace'.
         """
-        kwargs.update({'data': data, 'type': rtype})
-        kwargs.update(kwargs.pop('service', {}))
-        self.dbreport('note', kwargs)
+        kwargs.update({"data": data, "type": rtype})
+        kwargs.update(kwargs.pop("service", {}))
+        self.dbreport("note", kwargs)
 
     def delete(self, **kwargs):
         """
@@ -420,7 +420,7 @@ class NotesTable(MsfTable):
         - proto : the protocol associated with a Note.
         - ntype : the note type, e.g. 'smb_peer_os'.
         """
-        self.dbdel('note', kwargs)
+        self.dbdel("note", kwargs)
 
     def get(self, **kwargs):
         """
@@ -436,18 +436,17 @@ class NotesTable(MsfTable):
         - port : the port associated with the Note.
         - ntype : the type of Note.
         """
-        if not any([i in kwargs for i in ('host', 'address', 'addr')]):
-            raise TypeError('Expected a host, address, or addr.')
-        return self.dbget('note', kwargs)
+        if not any([i in kwargs for i in ("host", "address", "addr")]):
+            raise TypeError("Expected a host, address, or addr.")
+        return self.dbget("note", kwargs)
 
     update = report
 
 
 class LootsTable(MsfTable):
-
     @property
     def list(self):
-        return super(LootsTable, self).records('loots')
+        return super(LootsTable, self).records("loots")
 
     def find(self, **kwargs):
         """
@@ -457,7 +456,7 @@ class LootsTable(MsfTable):
         - limit : the maximum number of results.
         - offset : skip n results.
         """
-        return super(LootsTable, self).records('loots', **kwargs)
+        return super(LootsTable, self).records("loots", **kwargs)
 
     def report(self, path, rtype, **kwargs):
         """
@@ -477,18 +476,17 @@ class LootsTable(MsfTable):
         - info : additional information about this Loot.
         - data : the data within the Loot.
         """
-        kwargs.update({'path': path, 'type': rtype})
-        self.dbreport('loot', kwargs)
+        kwargs.update({"path": path, "type": rtype})
+        self.dbreport("loot", kwargs)
 
     update = report
 
 
 # Apparently there is no db.report_creds or db_get_cred API call
 class CredsTable(MsfTable):
-
     @property
     def list(self):
-        return super(CredsTable, self).records('creds')
+        return super(CredsTable, self).records("creds")
 
     def find(self, **kwargs):
         """
@@ -498,14 +496,13 @@ class CredsTable(MsfTable):
         - limit : the maximum number of results.
         - offset : skip n results.
         """
-        return super(CredsTable, self).records('creds', **kwargs)
+        return super(CredsTable, self).records("creds", **kwargs)
 
 
 class HostsTable(MsfTable):
-
     @property
     def list(self):
-        return super(HostsTable, self).records('hosts')
+        return super(HostsTable, self).records("hosts")
 
     def find(self, **kwargs):
         """
@@ -517,7 +514,7 @@ class HostsTable(MsfTable):
         - only_up : find only hosts that are alive.
         - addresses : find hosts based on a list of addresses.
         """
-        return super(HostsTable, self).records('hosts', **kwargs)
+        return super(HostsTable, self).records("hosts", **kwargs)
 
     def report(self, host, **kwargs):
         """
@@ -537,8 +534,8 @@ class HostsTable(MsfTable):
         - scope : interface identifier for link-local IPv6.
         - virtual_host : the name of the VM host software, e.g. 'VMWare', 'QEMU', 'Xen', etc.
         """
-        kwargs.update({'host': host})
-        self.dbreport('host', kwargs)
+        kwargs.update({"host": host})
+        self.dbreport("host", kwargs)
 
     def delete(self, **kwargs):
         """
@@ -549,9 +546,9 @@ class HostsTable(MsfTable):
         - address : the address associated with a Note, not required if 'host' or 'addresses' is specified.
         - addresses : a list of addresses associated with Notes, not required if 'host' or 'address' is specified.
         """
-        if not any([i in kwargs for i in ('host', 'address', 'addresses')]):
-            raise TypeError('Expected host, address, or addresses.')
-        self.dbdel('host', kwargs)
+        if not any([i in kwargs for i in ("host", "address", "addresses")]):
+            raise TypeError("Expected host, address, or addresses.")
+        self.dbdel("host", kwargs)
 
     def get(self, **kwargs):
         """
@@ -562,18 +559,17 @@ class HostsTable(MsfTable):
         - address : the address associated with a Note, not required if 'host' or 'addr' is specified.
         - addr : same as 'address', not required if 'host' or 'address' is specified.
         """
-        if not any([i in kwargs for i in ('addr', 'address', 'host')]):
-            raise TypeError('Expected addr, address, or host.')
-        return self.dbget('host', kwargs)
+        if not any([i in kwargs for i in ("addr", "address", "host")]):
+            raise TypeError("Expected addr, address, or host.")
+        return self.dbget("host", kwargs)
 
     update = report
 
 
 class ServicesTable(MsfTable):
-
     @property
     def list(self):
-        return super(ServicesTable, self).records('services')
+        return super(ServicesTable, self).records("services")
 
     def find(self, **kwargs):
         """
@@ -588,7 +584,7 @@ class ServicesTable(MsfTable):
         - ports : a comma separated string of ports.
         - names : a comma separated string of service names.
         """
-        return super(ServicesTable, self).records('services', **kwargs)
+        return super(ServicesTable, self).records("services", **kwargs)
 
     def report(self, host, port, proto, **kwargs):
         """
@@ -603,8 +599,8 @@ class ServicesTable(MsfTable):
         - name : the application layer protocol (e.g. ssh, mssql, smb)
         - sname : an alias for the above
         """
-        kwargs.update({'host': host, 'port': port, 'proto': proto})
-        self.dbreport('service', kwargs)
+        kwargs.update({"host": host, "port": port, "proto": proto})
+        self.dbreport("service", kwargs)
 
     def delete(self, **kwargs):
         """
@@ -620,10 +616,11 @@ class ServicesTable(MsfTable):
         - port : used along with 'proto', specifies a service.
         - proto : used along with 'port', specifies a service.
         """
-        if not any([i in kwargs for i in ('host', 'address', 'addresses')]) and \
-                not all([i in kwargs for i in ('proto', 'port')]):
-            raise TypeError('Expected host or port/proto pair.')
-        self.dbdel('service', kwargs)
+        if not any([i in kwargs for i in ("host", "address", "addresses")]) and not all(
+            [i in kwargs for i in ("proto", "port")]
+        ):
+            raise TypeError("Expected host or port/proto pair.")
+        self.dbdel("service", kwargs)
 
     def get(self, **kwargs):
         """
@@ -643,19 +640,19 @@ class ServicesTable(MsfTable):
         - up : specifies whether or not the service is alive.
         - names : a comma separated string of service names.
         """
-        if not any([i in kwargs for i in ('host', 'addr', 'address')]) and \
-                not all([i in kwargs for i in ('proto', 'port')]):
-            raise TypeError('Expected host or port/proto pair.')
-        return self.dbget('service', kwargs)
+        if not any([i in kwargs for i in ("host", "addr", "address")]) and not all(
+            [i in kwargs for i in ("proto", "port")]
+        ):
+            raise TypeError("Expected host or port/proto pair.")
+        return self.dbget("service", kwargs)
 
     update = report
 
 
 class VulnsTable(MsfTable):
-
     @property
     def list(self):
-        return super(VulnsTable, self).records('vulns')
+        return super(VulnsTable, self).records("vulns")
 
     def find(self, **kwargs):
         """
@@ -669,7 +666,7 @@ class VulnsTable(MsfTable):
         - ports : a comma separated string of ports.
         - names : a comma separated string of service names.
         """
-        return super(VulnsTable, self).records('vulns', **kwargs)
+        return super(VulnsTable, self).records("vulns", **kwargs)
 
     def report(self, host, name, **kwargs):
         """
@@ -683,8 +680,8 @@ class VulnsTable(MsfTable):
         - info : a human readable description of the vuln, free-form text.
         - refs : an array of Ref objects or string names of references.
         """
-        kwargs.update({'host': host, 'name': name})
-        self.dbreport('vuln', kwargs)
+        kwargs.update({"host": host, "name": name})
+        self.dbreport("vuln", kwargs)
 
     def delete(self, **kwargs):
         """
@@ -695,9 +692,9 @@ class VulnsTable(MsfTable):
         - address : the address associated with a Note, not required if 'host' or 'addresses' is specified.
         - addresses : a list of addresses associated with Notes, not required if 'host' or 'address' is specified.
         """
-        if not any([i in kwargs for i in ('host', 'address', 'addresses')]):
-            raise TypeError('Expected host, address, or addresses.')
-        self.dbdel('vuln', kwargs)
+        if not any([i in kwargs for i in ("host", "address", "addresses")]):
+            raise TypeError("Expected host, address, or addresses.")
+        self.dbdel("vuln", kwargs)
 
     def get(self, **kwargs):
         """
@@ -708,18 +705,17 @@ class VulnsTable(MsfTable):
         - address : the address associated with a Note, not required if 'host' or 'addr' is specified.
         - addr : same as 'address', not required if 'host' or 'address' is specified.
         """
-        if not any([i in kwargs for i in ('addr', 'address', 'host')]):
-            raise TypeError('Expected addr, address, or host.')
-        return self.dbget('vuln', kwargs)
+        if not any([i in kwargs for i in ("addr", "address", "host")]):
+            raise TypeError("Expected addr, address, or host.")
+        return self.dbget("vuln", kwargs)
 
     update = report
 
 
 class EventsTable(MsfTable):
-
     @property
     def list(self):
-        return super(EventsTable, self).records('events')
+        return super(EventsTable, self).records("events")
 
     def find(self, **kwargs):
         """
@@ -729,7 +725,7 @@ class EventsTable(MsfTable):
         - limit : the maximum number of results.
         - offset : skip n results.
         """
-        return super(EventsTable, self).records('events', **kwargs)
+        return super(EventsTable, self).records("events", **kwargs)
 
     def report(self, **kwargs):
         """
@@ -739,18 +735,17 @@ class EventsTable(MsfTable):
         - username : user that invoked the event.
         - host : host that invoked the event.
         """
-        if not any([i in kwargs for i in ('username', 'host')]):
-            raise TypeError('Expected either username or host')
-        self.dbreport('vuln', kwargs)
+        if not any([i in kwargs for i in ("username", "host")]):
+            raise TypeError("Expected either username or host")
+        self.dbreport("vuln", kwargs)
 
     update = report
 
 
 class ClientsTable(MsfTable):
-
     @property
     def list(self):
-        return super(ClientsTable, self).records('clients')
+        return super(ClientsTable, self).records("clients")
 
     def find(self, **kwargs):
         """
@@ -763,7 +758,7 @@ class ClientsTable(MsfTable):
         - ua_ver : the user-agent version.
         - addresses : a list of IP addresses.
         """
-        return super(ClientsTable, self).records('clients', **kwargs)
+        return super(ClientsTable, self).records("clients", **kwargs)
 
     def report(self, ua_string, host, **kwargs):
         """
@@ -780,8 +775,8 @@ class ClientsTable(MsfTable):
 
         Returns a Client.
         """
-        kwargs.update({'host': host, 'ua_string': ua_string})
-        self.dbreport('client', kwargs)
+        kwargs.update({"host": host, "ua_string": ua_string})
+        self.dbreport("client", kwargs)
 
     def delete(self, **kwargs):
         """
@@ -792,7 +787,7 @@ class ClientsTable(MsfTable):
         - address : the address associated with a Note, not required if 'host' or 'addresses' is specified.
         - addresses : a list of addresses associated with Notes, not required if 'host' or 'address' is specified.
         """
-        self.dbdel('client', kwargs)
+        self.dbdel("client", kwargs)
 
     def get(self, **kwargs):
         """
@@ -802,15 +797,14 @@ class ClientsTable(MsfTable):
         - host : the host associated with a Note, not required if 'address' or 'addr' is specified.
         - ua_string : the value of the User-Agent header
         """
-        if not any([i in kwargs for i in ('host', 'ua_string')]):
-            raise TypeError('Expected host or ua_string.')
-        return self.dbreport('client', kwargs)
+        if not any([i in kwargs for i in ("host", "ua_string")]):
+            raise TypeError("Expected host or ua_string.")
+        return self.dbreport("client", kwargs)
 
     update = report
 
 
 class Workspace(object):
-
     def __init__(self, rpc, name):
         """
         Initializes a workspace object.
@@ -893,19 +887,22 @@ class Workspace(object):
         """
         Delete the current workspace.
         """
-        self.rpc.call(MsfRpcMethod.DbDelWorkspace, [{'workspace': self.name}])
+        self.rpc.call(MsfRpcMethod.DbDelWorkspace, [{"workspace": self.name}])
 
     def importdata(self, data):
-        self.rpc.call(MsfRpcMethod.DbImportData, [{'workspace': self.name, 'data': data}])
+        self.rpc.call(
+            MsfRpcMethod.DbImportData, [{"workspace": self.name, "data": data}]
+        )
 
     def importfile(self, fname):
-        r = open(fname, mode='r')
-        self.rpc.call(MsfRpcMethod.DbImportData, [{'workspace': self.name, 'data': r.read()}])
+        r = open(fname, mode="r")
+        self.rpc.call(
+            MsfRpcMethod.DbImportData, [{"workspace": self.name, "data": r.read()}]
+        )
         r.close()
 
 
 class MsfManager(object):
-
     def __init__(self, rpc):
         """
         Initialize a msf component manager.
@@ -917,15 +914,14 @@ class MsfManager(object):
 
 
 class WorkspaceManager(MsfManager):
-
     @property
     def list(self):
         """
         The list of all workspaces in the current msf database.
         """
-        return self.rpc.call(MsfRpcMethod.DbWorkspaces)['workspaces']
+        return self.rpc.call(MsfRpcMethod.DbWorkspaces)["workspaces"]
 
-    def workspace(self, name='default'):
+    def workspace(self, name="default"):
         """
         Returns a Workspace object for the given workspace name.
 
@@ -954,8 +950,8 @@ class WorkspaceManager(MsfManager):
         - name : the name of the workspace
         """
         res = self.rpc.call(MsfRpcMethod.DbGetWorkspace, [name])
-        if 'workspace' in res:
-            return res['workspace']
+        if "workspace" in res:
+            return res["workspace"]
         else:
             return
 
@@ -982,12 +978,13 @@ class WorkspaceManager(MsfManager):
         """
         The current workspace.
         """
-        return self.workspace(self.rpc.call(MsfRpcMethod.DbCurrentWorkspace)['workspace'])
+        return self.workspace(
+            self.rpc.call(MsfRpcMethod.DbCurrentWorkspace)["workspace"]
+        )
 
 
 class DbManager(MsfManager):
-
-    def connect(self, username, database='msf', **kwargs):
+    def connect(self, username, database="msf", **kwargs):
         """
         Connects to a database and creates the msf schema if necessary.
 
@@ -1001,21 +998,21 @@ class DbManager(MsfManager):
         - database : the database name (default: 'msf')
         - port : the port that the server is running on (default: 5432)
         """
-        runopts = {'username': username, 'database': database}
+        runopts = {"username": username, "database": database}
         runopts.update(kwargs)
         res = self.rpc.call(MsfRpcMethod.DbConnect, [runopts])
-        return res['result'] == 'success'
+        return res["result"] == "success"
 
     @property
     def driver(self):
         """
         The current database driver in use.
         """
-        return self.rpc.call(MsfRpcMethod.DbDriver, [{}])['driver']
+        return self.rpc.call(MsfRpcMethod.DbDriver, [{}])["driver"]
 
     @driver.setter
     def driver(self, d):
-        self.rpc.call(MsfRpcMethod.DbDriver, {'driver': d})
+        self.rpc.call(MsfRpcMethod.DbDriver, {"driver": d})
 
     @property
     def status(self):
@@ -1042,7 +1039,7 @@ class DbManager(MsfManager):
         """
         The name of the current workspace.
         """
-        return self.rpc.call(MsfRpcMethod.DbCurrentWorkspace)['workspace']
+        return self.rpc.call(MsfRpcMethod.DbCurrentWorkspace)["workspace"]
 
     @workspace.setter
     def workspace(self, w):
@@ -1050,7 +1047,6 @@ class DbManager(MsfManager):
 
 
 class AuthManager(MsfManager):
-
     def login(self, password, **kwargs):
         """
         Login to the msfrpc daemon.
@@ -1081,7 +1077,7 @@ class AuthManager(MsfManager):
         """
         The current list of active session IDs.
         """
-        return self.rpc.call(MsfRpcMethod.AuthTokenList)['tokens']
+        return self.rpc.call(MsfRpcMethod.AuthTokenList)["tokens"]
 
     def add(self, token):
         """
@@ -1105,17 +1101,16 @@ class AuthManager(MsfManager):
         """
         Generate a session ID or token.
         """
-        return self.rpc.call(MsfRpcMethod.AuthTokenGenerate)['token']
+        return self.rpc.call(MsfRpcMethod.AuthTokenGenerate)["token"]
 
 
 class PluginManager(MsfManager):
-
     @property
     def list(self):
         """
         A list of loaded plugins.
         """
-        return self.rpc.call(MsfRpcMethod.PluginLoaded)['plugins']
+        return self.rpc.call(MsfRpcMethod.PluginLoaded)["plugins"]
 
     def load(self, plugin):
         """
@@ -1137,7 +1132,6 @@ class PluginManager(MsfManager):
 
 
 class JobManager(MsfManager):
-
     @property
     def list(self):
         """
@@ -1174,7 +1168,6 @@ class JobManager(MsfManager):
 
 
 class CoreManager(MsfManager):
-
     @property
     def version(self):
         """
@@ -1253,7 +1246,6 @@ class CoreManager(MsfManager):
 
 
 class MsfModule(object):
-
     def __init__(self, rpc, mtype, mname):
         """
         Initializes an msf module object.
@@ -1268,7 +1260,13 @@ class MsfModule(object):
         self.modulename = mname
         self.rpc = rpc
         self._info = rpc.call(MsfRpcMethod.ModuleInfo, [mtype, mname])
-        property_attributes = ["advanced", "evasion", "options", "required", "runoptions"]
+        property_attributes = [
+            "advanced",
+            "evasion",
+            "options",
+            "required",
+            "runoptions",
+        ]
         for k in self._info:
             if k not in property_attributes:
                 # don't try to set property attributes
@@ -1279,21 +1277,21 @@ class MsfModule(object):
         self._eoptions = []
         self._runopts = {}
         for o in self._moptions:
-            if self._moptions[o]['required']:
+            if self._moptions[o]["required"]:
                 self._roptions.append(o)
-            if self._moptions[o]['advanced']:
+            if self._moptions[o]["advanced"]:
                 self._aoptions.append(o)
-            if self._moptions[o]['evasion']:
+            if self._moptions[o]["evasion"]:
                 self._eoptions.append(o)
-            if 'default' in self._moptions[o]:
-                self._runopts[o] = self._moptions[o]['default']
+            if "default" in self._moptions[o]:
+                self._runopts[o] = self._moptions[o]["default"]
 
         if mtype in ["auxiliary", "post"]:
-            d_act = self._info.get('default_action')
+            d_act = self._info.get("default_action")
             if d_act is not None:
-                act = 'ACTION'
+                act = "ACTION"
                 self._moptions[act] = {"default": d_act}
-                self._runopts[act] = self._moptions[act]['default']
+                self._runopts[act] = self._moptions[act]["default"]
 
     @property
     def info(self):
@@ -1380,11 +1378,18 @@ class MsfModule(object):
 
         if key not in self.options:
             raise KeyError("Invalid option '%s'." % key)
-        elif 'enums' in self._moptions[key] and value not in self._moptions[key]['enums']:
-            raise ValueError("Value ('%s') is not one of %s" % (value, repr(self._moptions[key]['enums'])))
-        elif self._moptions[key]['type'] == 'bool' and not isinstance(value, bool):
+        elif (
+            "enums" in self._moptions[key] and value not in self._moptions[key]["enums"]
+        ):
+            raise ValueError(
+                "Value ('%s') is not one of %s"
+                % (value, repr(self._moptions[key]["enums"]))
+            )
+        elif self._moptions[key]["type"] == "bool" and not isinstance(value, bool):
             raise TypeError("Value must be a boolean not '%s'" % type(value).__name__)
-        elif self._moptions[key]['type'] in ['integer', 'float'] and not isinstance(value, Number):
+        elif self._moptions[key]["type"] in ["integer", "float"] and not isinstance(
+            value, Number
+        ):
             raise TypeError("Value must be an integer not '%s'" % type(value).__name__)
         self._runopts[key] = value
 
@@ -1408,8 +1413,12 @@ class MsfModule(object):
         runopts = self.runoptions.copy()
         if not isinstance(self, PayloadModule):
             return None
-        data = self.rpc.call(MsfRpcMethod.ModuleExecute, [self.moduletype, self.modulename, runopts], True)
-        payload = decode(data)[str.encode('payload')]
+        data = self.rpc.call(
+            MsfRpcMethod.ModuleExecute,
+            [self.moduletype, self.modulename, runopts],
+            True,
+        )
+        payload = decode(data)[str.encode("payload")]
         if isinstance(payload, str):
             return payload
         try:
@@ -1428,34 +1437,46 @@ class MsfModule(object):
         """
         runopts = self.runoptions.copy()
         if isinstance(self, ExploitModule):
-            payload = kwargs.get('payload')
-            runopts['TARGET'] = self.target
-            if 'DisablePayloadHandler' in runopts and runopts['DisablePayloadHandler']:
+            payload = kwargs.get("payload")
+            runopts["TARGET"] = self.target
+            if "DisablePayloadHandler" in runopts and runopts["DisablePayloadHandler"]:
                 pass
             elif payload is None:
-                runopts['DisablePayloadHandler'] = True
+                runopts["DisablePayloadHandler"] = True
             else:
                 if isinstance(payload, PayloadModule):
                     if payload.modulename not in self.payloads:
                         raise ValueError(
-                            'Invalid payload (%s) for given target (%d).' % (payload.modulename, self.target)
+                            "Invalid payload (%s) for given target (%d)."
+                            % (payload.modulename, self.target)
                         )
-                    runopts['PAYLOAD'] = payload.modulename
+                    runopts["PAYLOAD"] = payload.modulename
                     for k, v in payload.runoptions.items():
                         if v is None or (isinstance(v, str) and not v):
                             continue
-                        if k not in runopts or runopts[k] is None or \
-                                (isinstance(runopts[k], str) and not runopts[k]):
+                        if (
+                            k not in runopts
+                            or runopts[k] is None
+                            or (isinstance(runopts[k], str) and not runopts[k])
+                        ):
                             runopts[k] = v
                 #                    runopts.update(payload.runoptions)
                 elif isinstance(payload, str):
                     if payload not in self.payloads:
-                        raise ValueError('Invalid payload (%s) for given target (%d).' % (payload, self.target))
-                    runopts['PAYLOAD'] = payload
+                        raise ValueError(
+                            "Invalid payload (%s) for given target (%d)."
+                            % (payload, self.target)
+                        )
+                    runopts["PAYLOAD"] = payload
                 else:
-                    raise TypeError("Expected type str or PayloadModule not '%s'" % type(kwargs['payload']).__name__)
+                    raise TypeError(
+                        "Expected type str or PayloadModule not '%s'"
+                        % type(kwargs["payload"]).__name__
+                    )
 
-        return self.rpc.call(MsfRpcMethod.ModuleExecute, [self.moduletype, self.modulename, runopts])
+        return self.rpc.call(
+            MsfRpcMethod.ModuleExecute, [self.moduletype, self.modulename, runopts]
+        )
 
     def check(self, **kwargs):
         """
@@ -1466,38 +1487,49 @@ class MsfModule(object):
         """
         runopts = self.runoptions.copy()
         if isinstance(self, ExploitModule):
-            payload = kwargs.get('payload')
-            runopts['TARGET'] = self.target
-            if 'DisablePayloadHandler' in runopts and runopts['DisablePayloadHandler']:
+            payload = kwargs.get("payload")
+            runopts["TARGET"] = self.target
+            if "DisablePayloadHandler" in runopts and runopts["DisablePayloadHandler"]:
                 pass
             elif payload is None:
-                runopts['DisablePayloadHandler'] = True
+                runopts["DisablePayloadHandler"] = True
             else:
                 if isinstance(payload, PayloadModule):
                     if payload.modulename not in self.payloads:
                         raise ValueError(
-                            'Invalid payload (%s) for given target (%d).' % (payload.modulename, self.target)
+                            "Invalid payload (%s) for given target (%d)."
+                            % (payload.modulename, self.target)
                         )
-                    runopts['PAYLOAD'] = payload.modulename
+                    runopts["PAYLOAD"] = payload.modulename
                     for k, v in payload.runoptions.items():
                         if v is None or (isinstance(v, str) and not v):
                             continue
-                        if k not in runopts or runopts[k] is None or \
-                                (isinstance(runopts[k], str) and not runopts[k]):
+                        if (
+                            k not in runopts
+                            or runopts[k] is None
+                            or (isinstance(runopts[k], str) and not runopts[k])
+                        ):
                             runopts[k] = v
                 #                    runopts.update(payload.runoptions)
                 elif isinstance(payload, str):
                     if payload not in self.payloads:
-                        raise ValueError('Invalid payload (%s) for given target (%d).' % (payload, self.target))
-                    runopts['PAYLOAD'] = payload
+                        raise ValueError(
+                            "Invalid payload (%s) for given target (%d)."
+                            % (payload, self.target)
+                        )
+                    runopts["PAYLOAD"] = payload
                 else:
-                    raise TypeError("Expected type str or PayloadModule not '%s'" % type(kwargs['payload']).__name__)
+                    raise TypeError(
+                        "Expected type str or PayloadModule not '%s'"
+                        % type(kwargs["payload"]).__name__
+                    )
 
-        return self.rpc.call(MsfRpcMethod.ModuleCheck, [self.moduletype, self.modulename, runopts])
+        return self.rpc.call(
+            MsfRpcMethod.ModuleCheck, [self.moduletype, self.modulename, runopts]
+        )
 
 
 class ExploitModule(MsfModule):
-
     def __init__(self, rpc, exploit):
         """
         Initializes the use of an exploit module.
@@ -1506,8 +1538,8 @@ class ExploitModule(MsfModule):
         - rpc : the rpc client used to communicate with msfrpcd
         - exploit : the name of the exploit module.
         """
-        super(ExploitModule, self).__init__(rpc, 'exploit', exploit)
-        self._target = self._info.get('default_target', 0)
+        super(ExploitModule, self).__init__(rpc, "exploit", exploit)
+        self._target = self._info.get("default_target", 0)
 
     @property
     def payloads(self):
@@ -1524,7 +1556,9 @@ class ExploitModule(MsfModule):
     @target.setter
     def target(self, target):
         if target not in self.targets:
-            raise ValueError('Target must be one of %s' % repr(list(self.targets.keys())))
+            raise ValueError(
+                "Target must be one of %s" % repr(list(self.targets.keys()))
+            )
         self._target = target
 
     def targetpayloads(self, t=0):
@@ -1534,11 +1568,12 @@ class ExploitModule(MsfModule):
         Optional Keyword Arguments:
         - t : the target ID (default: 0, e.g. 'Automatic')
         """
-        return self.rpc.call(MsfRpcMethod.ModuleTargetCompatiblePayloads, [self.modulename, t])['payloads']
+        return self.rpc.call(
+            MsfRpcMethod.ModuleTargetCompatiblePayloads, [self.modulename, t]
+        )["payloads"]
 
 
 class PostModule(MsfModule):
-
     def __init__(self, rpc, post):
         """
         Initializes the use of a post exploitation module.
@@ -1547,8 +1582,8 @@ class PostModule(MsfModule):
         - rpc : the rpc client used to communicate with msfrpcd
         - post : the name of the post exploitation module.
         """
-        super(PostModule, self).__init__(rpc, 'post', post)
-        self._action = self._info.get('default_action', "")
+        super(PostModule, self).__init__(rpc, "post", post)
+        self._action = self._info.get("default_action", "")
 
     @property
     def sessions(self):
@@ -1564,13 +1599,14 @@ class PostModule(MsfModule):
     @action.setter
     def action(self, action):
         if action not in self.actions.values():
-            raise ValueError('Action must be one of %s' % repr(list(self.actions.values())))
+            raise ValueError(
+                "Action must be one of %s" % repr(list(self.actions.values()))
+            )
         self._action = action
-        self._runopts['ACTION'] = self._action
+        self._runopts["ACTION"] = self._action
 
 
 class EncoderModule(MsfModule):
-
     def __init__(self, rpc, encoder):
         """
         Initializes the use of an encoder module.
@@ -1579,11 +1615,10 @@ class EncoderModule(MsfModule):
         - rpc : the rpc client used to communicate with msfrpcd
         - encoder : the name of the encoder module.
         """
-        super(EncoderModule, self).__init__(rpc, 'encoder', encoder)
+        super(EncoderModule, self).__init__(rpc, "encoder", encoder)
 
 
 class AuxiliaryModule(MsfModule):
-
     def __init__(self, rpc, auxiliary):
         """
         Initializes the use of an auxiliary module.
@@ -1592,8 +1627,8 @@ class AuxiliaryModule(MsfModule):
         - rpc : the rpc client used to communicate with msfrpcd
         - auxiliary : the name of the auxiliary module.
         """
-        super(AuxiliaryModule, self).__init__(rpc, 'auxiliary', auxiliary)
-        self._action = self._info.get('default_action', "")
+        super(AuxiliaryModule, self).__init__(rpc, "auxiliary", auxiliary)
+        self._action = self._info.get("default_action", "")
 
     @property
     def action(self):
@@ -1602,13 +1637,14 @@ class AuxiliaryModule(MsfModule):
     @action.setter
     def action(self, action):
         if action not in self.actions.values():
-            raise ValueError('Action must be one of %s' % repr(list(self.actions.values())))
+            raise ValueError(
+                "Action must be one of %s" % repr(list(self.actions.values()))
+            )
         self._action = action
-        self._runopts['ACTION'] = self._action
+        self._runopts["ACTION"] = self._action
 
 
 class PayloadModule(MsfModule):
-
     def __init__(self, rpc, payload):
         """
         Initializes the use of a payload module.
@@ -1617,11 +1653,10 @@ class PayloadModule(MsfModule):
         - rpc : the rpc client used to communicate with msfrpcd
         - payload : the name of the payload module.
         """
-        super(PayloadModule, self).__init__(rpc, 'payload', payload)
+        super(PayloadModule, self).__init__(rpc, "payload", payload)
 
 
 class NopModule(MsfModule):
-
     def __init__(self, rpc, nop):
         """
         Initializes the use of a nop module.
@@ -1630,11 +1665,10 @@ class NopModule(MsfModule):
         - rpc : the rpc client used to communicate with msfrpcd
         - nop : the name of the nop module.
         """
-        super(NopModule, self).__init__(rpc, 'nop', nop)
+        super(NopModule, self).__init__(rpc, "nop", nop)
 
 
 class ModuleManager(MsfManager):
-
     def execute(self, modtype, modname, **kwargs):
         """
         Execute the module.
@@ -1682,41 +1716,40 @@ class ModuleManager(MsfManager):
     def results(self, uuid):
         return self.rpc.call(MsfRpcMethod.ModuleResults, [uuid])
 
-
     @property
     def exploits(self):
         """
         A list of exploit modules.
         """
-        return self.rpc.call(MsfRpcMethod.ModuleExploits)['modules']
+        return self.rpc.call(MsfRpcMethod.ModuleExploits)["modules"]
 
     @property
     def evasion(self):
         """
         A list of exploit modules.
         """
-        return self.rpc.call(MsfRpcMethod.ModuleEvasion)['modules']
+        return self.rpc.call(MsfRpcMethod.ModuleEvasion)["modules"]
 
     @property
     def payloads(self):
         """
         A list of payload modules.
         """
-        return self.rpc.call(MsfRpcMethod.ModulePayloads)['modules']
+        return self.rpc.call(MsfRpcMethod.ModulePayloads)["modules"]
 
     @property
     def auxiliary(self):
         """
         A list of auxiliary modules.
         """
-        return self.rpc.call(MsfRpcMethod.ModuleAuxiliary)['modules']
+        return self.rpc.call(MsfRpcMethod.ModuleAuxiliary)["modules"]
 
     @property
     def post(self):
         """
         A list of post modules.
         """
-        return self.rpc.call(MsfRpcMethod.ModulePost)['modules']
+        return self.rpc.call(MsfRpcMethod.ModulePost)["modules"]
 
     @property
     def encodeformats(self):
@@ -1730,14 +1763,14 @@ class ModuleManager(MsfManager):
         """
         A list of encoder modules.
         """
-        return self.rpc.call(MsfRpcMethod.ModuleEncoders)['modules']
+        return self.rpc.call(MsfRpcMethod.ModuleEncoders)["modules"]
 
     @property
     def nops(self):
         """
         A list of nop modules.
         """
-        return self.rpc.call(MsfRpcMethod.ModuleNops)['modules']
+        return self.rpc.call(MsfRpcMethod.ModuleNops)["modules"]
 
     @property
     def platforms(self):
@@ -1753,23 +1786,25 @@ class ModuleManager(MsfManager):
         Mandatory Arguments:
         - mname : the module name (e.g. 'exploits/windows/http/icecast_header')
         """
-        if mtype == 'exploit':
+        if mtype == "exploit":
             return ExploitModule(self.rpc, mname)
-        elif mtype == 'post':
+        elif mtype == "post":
             return PostModule(self.rpc, mname)
-        elif mtype == 'encoder':
+        elif mtype == "encoder":
             return EncoderModule(self.rpc, mname)
-        elif mtype == 'auxiliary':
+        elif mtype == "auxiliary":
             return AuxiliaryModule(self.rpc, mname)
-        elif mtype == 'nop':
+        elif mtype == "nop":
             return NopModule(self.rpc, mname)
-        elif mtype == 'payload':
+        elif mtype == "payload":
             return PayloadModule(self.rpc, mname)
-        raise MsfRpcError('Unknown module type %s not: exploit, post, encoder, auxiliary, nop, or payload' % mname)
+        raise MsfRpcError(
+            "Unknown module type %s not: exploit, post, encoder, auxiliary, nop, or payload"
+            % mname
+        )
 
 
 class MsfSession(object):
-
     def __init__(self, sid, rpc, sd):
         """
         Initialize a meterpreter or shell session.
@@ -1783,11 +1818,11 @@ class MsfSession(object):
         self.rpc = rpc
         self.__dict__.update(sd)
         for s in self.__dict__:
-            if re.match(r'\d+', s):
-                if 'plugins' not in self.__dict__[s]:
-                    self.__dict__[s]['plugins'] = []
-                if 'write_dir' not in self.__dict__[s]:
-                    self.__dict__[s]['write_dir'] = ''
+            if re.match(r"\d+", s):
+                if "plugins" not in self.__dict__[s]:
+                    self.__dict__[s]["plugins"] = []
+                if "write_dir" not in self.__dict__[s]:
+                    self.__dict__[s]["write_dir"] = ""
 
     def stop(self):
         """
@@ -1800,7 +1835,9 @@ class MsfSession(object):
         """
         A list of compatible session modules.
         """
-        return self.rpc.call(MsfRpcMethod.SessionCompatibleModules, [self.sid])['modules']
+        return self.rpc.call(MsfRpcMethod.SessionCompatibleModules, [self.sid])[
+            "modules"
+        ]
 
     @property
     def ring(self):
@@ -1808,12 +1845,11 @@ class MsfSession(object):
 
 
 class MeterpreterSession(MsfSession):
-
     def read(self):
         """
         Read data from the meterpreter session.
         """
-        return self.rpc.call(MsfRpcMethod.SessionMeterpreterRead, [self.sid])['data']
+        return self.rpc.call(MsfRpcMethod.SessionMeterpreterRead, [self.sid])["data"]
 
     def write(self, data):
         """
@@ -1822,8 +1858,8 @@ class MeterpreterSession(MsfSession):
         Mandatory Arguments:
         - data : arbitrary data or commands
         """
-        if not data.endswith('\n'):
-            data += '\n'
+        if not data.endswith("\n"):
+            data += "\n"
         self.rpc.call(MsfRpcMethod.SessionMeterpreterWrite, [self.sid, data])
 
     def runsingle(self, data):
@@ -1858,7 +1894,9 @@ class MeterpreterSession(MsfSession):
         """
         The operating system path separator.
         """
-        return self.rpc.call(MsfRpcMethod.SessionMeterpreterDirectorySeparator, [self.sid])['separator']
+        return self.rpc.call(
+            MsfRpcMethod.SessionMeterpreterDirectorySeparator, [self.sid]
+        )["separator"]
 
     def detach(self):
         """
@@ -1879,7 +1917,9 @@ class MeterpreterSession(MsfSession):
         Mandatory Arguments:
         - line : a partial command line for completion.
         """
-        return self.rpc.call(MsfRpcMethod.SessionMeterpreterTabs, [self.sid, line])['tabs']
+        return self.rpc.call(MsfRpcMethod.SessionMeterpreterTabs, [self.sid, line])[
+            "tabs"
+        ]
 
     def load_plugin(self, plugin):
         """
@@ -1888,12 +1928,14 @@ class MeterpreterSession(MsfSession):
         Mandatory Arguments:
         - plugin : name of plugin.
         """
-        end_strs = ['Success', 'has already been loaded']
-        out = self.run_with_output(f'load {plugin}', end_strs)
-        self.__dict__[self.sid]['plugins'].append(plugin)
+        end_strs = ["Success", "has already been loaded"]
+        out = self.run_with_output(f"load {plugin}", end_strs)
+        self.__dict__[self.sid]["plugins"].append(plugin)
         return out
 
-    def run_with_output(self, cmd, end_strs=None, timeout=301, timeout_exception=True, api_call='write'):
+    def run_with_output(
+        self, cmd, end_strs=None, timeout=301, timeout_exception=True, api_call="write"
+    ):
         """
         Run a command and wait for the output.
 
@@ -1906,13 +1948,15 @@ class MeterpreterSession(MsfSession):
         - timeout_exception : If True, library will throw an error when it hits the timeout.
                               If False, library will simply return whatever output it got within the timeout limit.
         """
-        if api_call == 'write':
+        if api_call == "write":
             self.write(cmd)
-            out = ''
+            out = ""
         else:
             out = self.runsingle(cmd)
         time.sleep(1)
-        out += self.gather_output(cmd, out, end_strs, timeout, timeout_exception)  # gather last of data buffer
+        out += self.gather_output(
+            cmd, out, end_strs, timeout, timeout_exception
+        )  # gather last of data buffer
         return out
 
     def gather_output(self, cmd, out, end_strs, timeout, timeout_exception):
@@ -1939,7 +1983,9 @@ class MeterpreterSession(MsfSession):
         else:
             return out
 
-    def run_shell_cmd_with_output(self, cmd, end_strs, exit_shell=True, timeout=301, timeout_exception=True):
+    def run_shell_cmd_with_output(
+        self, cmd, end_strs, exit_shell=True, timeout=301, timeout_exception=True
+    ):
         """
         Runs a Windows command from a meterpreter shell
 
@@ -1947,21 +1993,25 @@ class MeterpreterSession(MsfSession):
         exit_shell : Exit the shell inside meterpreter once command is done.
         """
         self.start_shell()
-        out = self.run_with_output(cmd, end_strs, timeout=timeout, timeout_exception=timeout_exception)
+        out = self.run_with_output(
+            cmd, end_strs, timeout=timeout, timeout_exception=timeout_exception
+        )
         if exit_shell == True:
             self.read()  # Clear buffer
             res = self.detach()
-            if 'result' in res:
-                if res['result'] != 'success':
-                    raise MsfError('Shell failed to exit on meterpreter session ' + self.sid)
+            if "result" in res:
+                if res["result"] != "success":
+                    raise MsfError(
+                        "Shell failed to exit on meterpreter session " + self.sid
+                    )
         return out
 
     def start_shell(self):
         """
         Drops meterpreter session into shell
         """
-        cmd = 'shell'
-        end_strs = ['>']
+        cmd = "shell"
+        end_strs = [">"]
         self.run_with_output(cmd, end_strs)
         return True
 
@@ -1972,12 +2022,12 @@ class MeterpreterSession(MsfSession):
         Mandatory Arguments:
         - script_path : Path on the local machine to the Powershell script.
         """
-        if 'powershell' not in self.info['plugins']:
-            self.load_plugin('powershell')
-        end_strs = ['[-]', '[+]']
-        out = self.run_with_output(f'powershell_import {script_path}', end_strs)
-        if 'failed to load' in out:
-            raise MsfRpcError(f'File {script_path} failed to load.')
+        if "powershell" not in self.info["plugins"]:
+            self.load_plugin("powershell")
+        end_strs = ["[-]", "[+]"]
+        out = self.run_with_output(f"powershell_import {script_path}", end_strs)
+        if "failed to load" in out:
+            raise MsfRpcError(f"File {script_path} failed to load.")
         return out
 
     def run_psh_cmd(self, ps_cmd, timeout=310, timeout_exception=True):
@@ -1987,28 +2037,29 @@ class MeterpreterSession(MsfSession):
         Mandatory Arguments:
         - ps_cmd : command to run in the session.
         """
-        if 'powershell' not in self.info['plugins']:
-            self.load_plugin('powershell')
+        if "powershell" not in self.info["plugins"]:
+            self.load_plugin("powershell")
         ps_cmd = f'powershell_execute "{ps_cmd}"'
-        out = self.run_with_output(ps_cmd, ['[-]', '[+]'], timeout=timeout, timeout_exception=timeout_exception)
+        out = self.run_with_output(
+            ps_cmd, ["[-]", "[+]"], timeout=timeout, timeout_exception=timeout_exception
+        )
         return out
 
     def get_writeable_dir(self):
         """
         Gets the temp directory which we are assuming is writeable
         """
-        if self.info['write_dir'] == '':
-            out = self.run_shell_cmd_with_output('echo %TEMP%', ['>'])
+        if self.info["write_dir"] == "":
+            out = self.run_shell_cmd_with_output("echo %TEMP%", [">"])
             # Example output: 'echo %TEMP%\nC:\\Users\\user\\AppData\\Local\\Temp\r\n\r\nC:\\Windows\\system32>'
-            write_dir = out.split('\n')[1][:-1] + '\\'
-            self.__dict__[self.sid]['write_dir'] = write_dir
+            write_dir = out.split("\n")[1][:-1] + "\\"
+            self.__dict__[self.sid]["write_dir"] = write_dir
             return write_dir
         else:
-            return self.info['write_dir']
+            return self.info["write_dir"]
 
 
 class SessionRing(object):
-
     def __init__(self, rpc, token):
         self.rpc = rpc
         self.sid = token
@@ -2038,7 +2089,7 @@ class SessionRing(object):
         """
         Returns the last sequence ID in the session ring.
         """
-        return int(self.rpc.call(MsfRpcMethod.SessionRingLast, [self.sid])['seq'])
+        return int(self.rpc.call(MsfRpcMethod.SessionRingLast, [self.sid])["seq"])
 
     def clear(self):
         """
@@ -2048,12 +2099,11 @@ class SessionRing(object):
 
 
 class ShellSession(MsfSession):
-
     def read(self):
         """
         Read data from the shell session.
         """
-        return self.rpc.call(MsfRpcMethod.SessionShellRead, [self.sid])['data']
+        return self.rpc.call(MsfRpcMethod.SessionShellRead, [self.sid])["data"]
 
     def write(self, data):
         """
@@ -2062,8 +2112,8 @@ class ShellSession(MsfSession):
         Mandatory Arguments:
         - data : arbitrary data or commands
         """
-        if not data.endswith('\n'):
-            data += '\n'
+        if not data.endswith("\n"):
+            data += "\n"
         self.rpc.call(MsfRpcMethod.SessionShellWrite, [self.sid, data])
 
     def upgrade(self, lhost, lport):
@@ -2092,7 +2142,7 @@ class ShellSession(MsfSession):
         """
         Wait for session command to get all output.
         """
-        out = ''
+        out = ""
         counter = 0
         while counter < timeout + 1:
             time.sleep(1)
@@ -2101,18 +2151,21 @@ class ShellSession(MsfSession):
                 return out
             counter += 1
 
-        raise MsfError(f"Command <{repr(cmd)[1:-1]}> timed out in <{timeout}s> on session <{self.sid}> "
-                       f"without finding any termination strings within <{end_strs}> in the output: <{out}>")
+        raise MsfError(
+            f"Command <{repr(cmd)[1:-1]}> timed out in <{timeout}s> on session <{self.sid}> "
+            f"without finding any termination strings within <{end_strs}> in the output: <{out}>"
+        )
 
 
 class SessionManager(MsfManager):
-
     @property
     def list(self):
         """
         A list of active sessions.
         """
-        return {str(k): v for k, v in self.rpc.call(MsfRpcMethod.SessionList).items()}  # Convert int id to str
+        return {
+            str(k): v for k, v in self.rpc.call(MsfRpcMethod.SessionList).items()
+        }  # Convert int id to str
 
     def session(self, sid):
         """
@@ -2124,21 +2177,22 @@ class SessionManager(MsfManager):
         s = self.list
         if sid not in s:
             for k in s:
-                if s[k]['uuid'] == sid:
-                    if s[k]['type'] == 'meterpreter':
+                if s[k]["uuid"] == sid:
+                    if s[k]["type"] == "meterpreter":
                         return MeterpreterSession(k, self.rpc, s)
-                    elif s[k]['type'] == 'shell':
+                    elif s[k]["type"] == "shell":
                         return ShellSession(k, self.rpc, s)
-            raise KeyError('Session ID (%s) does not exist' % sid)
-        if s[sid]['type'] == 'meterpreter':
+            raise KeyError("Session ID (%s) does not exist" % sid)
+        if s[sid]["type"] == "meterpreter":
             return MeterpreterSession(sid, self.rpc, s)
-        elif s[sid]['type'] == 'shell':
+        elif s[sid]["type"] == "shell":
             return ShellSession(sid, self.rpc, s)
-        raise NotImplementedError('Could not determine session type: %s' % s[sid]['type'])
+        raise NotImplementedError(
+            "Could not determine session type: %s" % s[sid]["type"]
+        )
 
 
 class MsfConsole(object):
-
     def __init__(self, rpc, cid=None):
         """
         Initializes an msf console.
@@ -2152,10 +2206,10 @@ class MsfConsole(object):
         self.rpc = rpc
         if cid is None:
             r = self.rpc.call(MsfRpcMethod.ConsoleCreate)
-            if 'id' in r:
-                self.cid = r['id']
+            if "id" in r:
+                self.cid = r["id"]
             else:
-                raise MsfRpcError('Unable to create a new console.')
+                raise MsfRpcError("Unable to create a new console.")
         else:
             self.cid = cid
 
@@ -2169,8 +2223,8 @@ class MsfConsole(object):
         """
         Write data to the console.
         """
-        if not command.endswith('\n'):
-            command += '\n'
+        if not command.endswith("\n"):
+            command += "\n"
         self.rpc.call(MsfRpcMethod.ConsoleWrite, [self.cid, command])
 
     def sessionkill(self):
@@ -2192,7 +2246,7 @@ class MsfConsole(object):
         Mandatory Arguments:
         - line : a partial command to be completed.
         """
-        return self.rpc.call(MsfRpcMethod.ConsoleTabs, [self.cid, line])['tabs']
+        return self.rpc.call(MsfRpcMethod.ConsoleTabs, [self.cid, line])["tabs"]
 
     def destroy(self):
         """
@@ -2205,10 +2259,10 @@ class MsfConsole(object):
         Checks if the console is busy. We can't use .read() because that clears the data buffer.
         We must do this by using .list instead.
         """
-        cons = self.rpc.call(MsfRpcMethod.ConsoleList)['consoles']
+        cons = self.rpc.call(MsfRpcMethod.ConsoleList)["consoles"]
         for c in cons:
-            if c['id'] == self.cid:
-                return c['busy']
+            if c["id"] == self.cid:
+                return c["busy"]
 
     def run_module_with_output(self, mod, payload=None, run_as_job=False, timeout=301):
         """
@@ -2220,47 +2274,52 @@ class MsfConsole(object):
         Optional Keyword Arguments:
         - payload : the MsfModule object to be used as payload
         """
-        options_str = 'use {}/{}\n'.format(mod.moduletype, mod.modulename)
+        options_str = "use {}/{}\n".format(mod.moduletype, mod.modulename)
         if self.rpc.consoles.console(self.cid).is_busy():
-            raise MsfError('Console {} is busy'.format(self.cid))
+            raise MsfError("Console {} is busy".format(self.cid))
         self.rpc.consoles.console(self.cid).read()  # clear data buffer
         opts = mod.runoptions.copy()
         if payload is None:
-            opts['DisablePayloadHandler'] = True
+            opts["DisablePayloadHandler"] = True
 
         # Set module params
         for k in opts.keys():
-            options_str += 'set {} {}\n'.format(k, opts[k])
+            options_str += "set {} {}\n".format(k, opts[k])
 
         # Set payload params
-        if mod.moduletype == 'exploit':
-            opts['TARGET'] = mod.target
-            options_str += 'set TARGET {}\n'.format(mod.target)
+        if mod.moduletype == "exploit":
+            opts["TARGET"] = mod.target
+            options_str += "set TARGET {}\n".format(mod.target)
 
-            if 'DisablePayloadHandler' in opts and opts['DisablePayloadHandler']:
+            if "DisablePayloadHandler" in opts and opts["DisablePayloadHandler"]:
                 pass
             elif isinstance(payload, PayloadModule):
                 if payload.modulename not in mod.payloads:
                     raise ValueError(
-                        'Invalid payload ({}) for given target ({}).'.format(payload.modulename, mod.target))
-                options_str += 'set payload {}\n'.format(payload.modulename)
+                        "Invalid payload ({}) for given target ({}).".format(
+                            payload.modulename, mod.target
+                        )
+                    )
+                options_str += "set payload {}\n".format(payload.modulename)
                 for k, v in payload.runoptions.items():
                     if v is None or (isinstance(v, str) and not v):
                         continue
-                    options_str += 'set {} {}\n'.format(k, v)
+                    options_str += "set {} {}\n".format(k, v)
             else:
-                raise ValueError('No valid PayloadModule provided for exploit execution.')
+                raise ValueError(
+                    "No valid PayloadModule provided for exploit execution."
+                )
 
         # Run the module without directly opening a command line
-        options_str += 'run -z'
+        options_str += "run -z"
         if run_as_job:
             options_str += " -j"
         self.rpc.consoles.console(self.cid).write(options_str)
-        data = ''
+        data = ""
         timer = 0
-        while data == '' or self.rpc.consoles.console(self.cid).is_busy():
+        while data == "" or self.rpc.consoles.console(self.cid).is_busy():
             time.sleep(1)
-            data += self.rpc.consoles.console(self.cid).read()['data']
+            data += self.rpc.consoles.console(self.cid).read()["data"]
             timer += 1
             if timer > timeout:
                 break
@@ -2268,13 +2327,12 @@ class MsfConsole(object):
 
 
 class ConsoleManager(MsfManager):
-
     @property
     def list(self):
         """
         A list of active consoles.
         """
-        return self.rpc.call(MsfRpcMethod.ConsoleList)['consoles']
+        return self.rpc.call(MsfRpcMethod.ConsoleList)["consoles"]
 
     def console(self, cid=None):
         """
@@ -2283,11 +2341,11 @@ class ConsoleManager(MsfManager):
         Optional Keyword Arguments:
         - cid : the console identifier.
         """
-        s = [i['id'] for i in self.list]
+        s = [i["id"] for i in self.list]
         if cid is None:
             return MsfConsole(self.rpc)
         if cid not in s:
-            raise KeyError('Console ID (%s) does not exist' % cid)
+            raise KeyError("Console ID (%s) does not exist" % cid)
         else:
             return MsfConsole(self.rpc, cid=cid)
 

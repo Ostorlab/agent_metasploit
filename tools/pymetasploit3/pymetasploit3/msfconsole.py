@@ -11,7 +11,6 @@ class MsfRpcConsoleType:
 
 
 class MsfRpcConsole(object):
-
     def __init__(self, rpc, token=None, cb=None):
         """
         Emulates the msfconsole in msf except over RPC.
@@ -27,13 +26,17 @@ class MsfRpcConsole(object):
 
         if token is not None:
             self.console = rpc.sessions.session(token)
-            self.type_ = MsfRpcConsoleType.Shell if isinstance(self.console, ShellSession) else MsfRpcConsoleType.Meterpreter
-            self.prompt = '>>> '
-            self.callback(dict(data='', prompt=self.prompt))
+            self.type_ = (
+                MsfRpcConsoleType.Shell
+                if isinstance(self.console, ShellSession)
+                else MsfRpcConsoleType.Meterpreter
+            )
+            self.prompt = ">>> "
+            self.callback(dict(data="", prompt=self.prompt))
         else:
             self.console = rpc.consoles.console()
             self.type_ = MsfRpcConsoleType.Console
-            self.prompt = ''
+            self.prompt = ""
 
         self.lock = Lock()
         self.running = True
@@ -47,12 +50,12 @@ class MsfRpcConsole(object):
         self.lock.release()
 
         if self.type_ == MsfRpcConsoleType.Console:
-            if d['data'] or self.prompt != d['prompt']:
-                self.prompt = d['prompt']
+            if d["data"] or self.prompt != d["prompt"]:
+                self.prompt = d["prompt"]
                 if self.callback is not None:
                     self.callback(d)
                 else:
-                    print(d['data'])
+                    print(d["data"])
         else:
             if d:
                 if self.callback is not None:
@@ -68,8 +71,8 @@ class MsfRpcConsole(object):
         Mandatory Arguments:
         - command : the command to execute
         """
-        if not command.endswith('\n'):
-            command += '\n'
+        if not command.endswith("\n"):
+            command += "\n"
         self.lock.acquire()
         self.console.write(command)
         self.lock.release()
