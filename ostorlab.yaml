@@ -67,4 +67,7 @@ args:
   - name: "module"
     type: "string"
     description: "Metasploit module."
-
+  - name: "options"
+    type: "string"
+    description: "Metasploit module options"
+    value: '[]'

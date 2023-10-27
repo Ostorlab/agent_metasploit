@@ -1,4 +1,5 @@
 """Ostorlab Agent implementation for metasploit"""
+import json
 import logging
 import socket
 import time
@@ -10,10 +11,10 @@ from ostorlab.agent.message import message as m
 from ostorlab.agent.mixins import agent_persist_mixin as persist_mixin
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
 from ostorlab.runtimes import definitions as runtime_definitions
-from pymetasploit3 import msfrpc
 from rich import logging as rich_logging
 
 from agent import utils
+from pymetasploit3 import msfrpc
 
 logging.basicConfig(
     format="%(message)s",
@@ -24,7 +25,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-AGENT_ARGS = ["module", "RHOSTS", "VHOST", "RPORT"]
 SCHEME_TO_PORT = {"http": 80, "https": 443}
 DEFAULT_PORT = 443
 MODULE_TIMEOUT = 180
@@ -49,7 +49,7 @@ class CheckError(Error):
 class MetasploitAgent(
     agent.Agent, vuln_mixin.AgentReportVulnMixin, persist_mixin.AgentPersistMixin
 ):
-    """Metasploit agent."""
+    """Source map agent."""
 
     def __init__(
         self,
@@ -59,14 +59,14 @@ class MetasploitAgent(
         agent.Agent.__init__(self, agent_definition, agent_settings)
         vuln_mixin.AgentReportVulnMixin.__init__(self)
         persist_mixin.AgentPersistMixin.__init__(self, agent_settings)
-        self.client = utils.initialize_msf_rpc()
-        self.cid = self.client.consoles.console().cid
+        self._client = utils.initialize_msf_rpc()
+        self._cid = self._client.consoles.console().cid
 
     def process(self, message: m.Message) -> None:
-        """Trigger metasploit module and emit found findings
+        """Trigger Source map enumeration and emit found findings
 
         Args:
-            message: A message containing the asset to be processed
+            message: A message containing the path and the content of the file to be processed
 
         """
         module = self.args.get("module")
@@ -77,7 +77,7 @@ class MetasploitAgent(
 
         module_type, module_name = module.split("/", 1)
         try:
-            selected_module = self.client.modules.use(module_type, module_name)
+            selected_module = self._client.modules.use(module_type, module_name)
         except msfrpc.MsfRpcError as exc:
             raise ModuleError("Specified module does not exist") from exc
 
@@ -97,7 +97,7 @@ class MetasploitAgent(
         started_timestamp = time.time()
         results = None
         while True:
-            job_result = self.client.jobs.info_by_uuid(job_uuid)
+            job_result = self._client.jobs.info_by_uuid(job_uuid)
             status = job_result["status"]
             if status == "completed":
                 results = job_result["result"]
@@ -118,8 +118,8 @@ class MetasploitAgent(
         if isinstance(results, dict) and results.get("code") == "vulnerable":
             technical_detail += f'Message: {results["message"]}'
         else:
-            console_output = self.client.consoles.console(
-                self.cid
+            console_output = self._client.consoles.console(
+                self._cid
             ).run_module_with_output(selected_module, mode=mode)
             module_output = console_output.split("WORKSPACE => Ostorlab")[1]
             if "[-]" in module_output:
@@ -148,10 +148,11 @@ class MetasploitAgent(
         if "RPORT" in selected_module.missing_required:
             selected_module["RPORT"] = rport
 
-        extra_args = [arg_name for arg_name in self.args if arg_name not in AGENT_ARGS]
-        for arg in extra_args:
-            if arg in selected_module.required:
-                selected_module[arg] = self.args.get(arg)
+        msf_options = json.loads(self.args.get("options"))
+        for arg in msf_options:
+            arg_name = arg["name"]
+            if arg_name in selected_module.options:
+                selected_module[arg_name] = arg["value"]
 
         if len(selected_module.missing_required) > 0:
             raise ArgumentError(
