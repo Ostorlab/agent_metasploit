@@ -5,7 +5,6 @@ import os
 from pymetasploit3.msfrpc import *
 
 
-
 def test_hosts(client):
     default_workspace_hosts = client.db.workspaces.workspace("default").hosts.list
     assert (
