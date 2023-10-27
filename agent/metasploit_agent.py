@@ -10,10 +10,10 @@ from ostorlab.agent.message import message as m
 from ostorlab.agent.mixins import agent_persist_mixin as persist_mixin
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
 from ostorlab.runtimes import definitions as runtime_definitions
+from pymetasploit3 import msfrpc
 from rich import logging as rich_logging
 
 from agent import utils
-from pymetasploit3 import msfrpc
 
 logging.basicConfig(
     format="%(message)s",
