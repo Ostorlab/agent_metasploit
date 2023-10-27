@@ -49,7 +49,7 @@ class CheckError(Error):
 class MetasploitAgent(
     agent.Agent, vuln_mixin.AgentReportVulnMixin, persist_mixin.AgentPersistMixin
 ):
-    """Source map agent."""
+    """Metasploit agent."""
 
     def __init__(
         self,
@@ -63,10 +63,10 @@ class MetasploitAgent(
         self.cid = self.client.consoles.console().cid
 
     def process(self, message: m.Message) -> None:
-        """Trigger Source map enumeration and emit found findings
+        """Trigger metasploit module and emit found findings
 
         Args:
-            message: A message containing the path and the content of the file to be processed
+            message: A message containing the asset to be processed
 
         """
         module = self.args.get("module")
