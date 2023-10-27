@@ -5,12 +5,6 @@ import os
 from pymetasploit3.msfrpc import *
 
 
-@pytest.fixture()
-def client():
-    client = MsfRpcClient("123", port=55552)
-    yield client
-    client.call(MsfRpcMethod.AuthLogout)
-
 
 def test_hosts(client):
     default_workspace_hosts = client.db.workspaces.workspace("default").hosts.list
@@ -121,7 +115,7 @@ def test_workspaces_importfile(client):
     client.db.workspaces.set("pytest")
     cur = client.db.workspaces.current.current
     assert cur == "pytest"
-    test_file = os.getcwd() + "/test.xml"
+    test_file = os.getcwd() + "/tools/pymetasploit3/tests/test.xml"
     client.db.workspaces.workspace(cur).importfile(test_file)
     assert (
         client.db.workspaces.workspace(cur).hosts.get(host="192.168.1.2")[0]["address"]

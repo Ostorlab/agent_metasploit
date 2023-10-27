@@ -4,13 +4,6 @@ import pytest
 from pymetasploit3.msfrpc import *
 
 
-@pytest.fixture()
-def client():
-    client = MsfRpcClient("123", port=55552)
-    yield client
-    client.call(MsfRpcMethod.AuthLogout)
-
-
 def test_module_list(client):
     exs = client.modules.exploits
     assert "windows/smb/ms08_067_netapi" in exs
@@ -31,7 +24,7 @@ def test_module_settings(client):
 
 def test_module_rpc_info(client):
     modinfo = client.call(
-        MsfRpcMethod.ModuleInfo, [None, "exploit/windows/smb/ms08_067_netapi"]
+        MsfRpcMethod.ModuleInfo, ["exploit", "windows/smb/ms08_067_netapi"]
     )
     assert (
         modinfo["name"]

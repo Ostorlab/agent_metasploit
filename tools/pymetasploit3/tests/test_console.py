@@ -5,13 +5,6 @@ from pymetasploit3.msfrpc import *
 
 
 @pytest.fixture()
-def client():
-    client = MsfRpcClient("123", port=55552)
-    yield client
-    client.call(MsfRpcMethod.AuthLogout)
-
-
-@pytest.fixture()
 def cid(client):
     c_id = client.call(MsfRpcMethod.ConsoleCreate)["id"]
     client.consoles.console(c_id).read()
@@ -54,8 +47,6 @@ def test_console_manager_readwrite(client, cid):
 def test_console_run_module(client, cid):
     x = client.modules.use("exploit", "unix/ftp/vsftpd_234_backdoor")
     x["RHOSTS"] = "127.0.0.1"
-    out = client.consoles.console(cid).run_module_with_output(
-        x, payload="cmd/unix/interact"
-    )
+    out = client.consoles.console(cid).run_module_with_output(x, mode="exploit")
     assert type(out) == str
-    assert "[*] Exploit completed, but no session was created.".lower() in out.lower()
+    assert "[-] 127.0.0.1:21 - Exploit failed [unreachable]: Rex::ConnectionRefused The connection was refused by the remote host (127.0.0.1:21)." in out

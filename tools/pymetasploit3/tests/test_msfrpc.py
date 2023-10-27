@@ -5,13 +5,6 @@ from pymetasploit3.msfrpc import *
 
 
 @pytest.fixture()
-def client():
-    client = MsfRpcClient("123", port=55552)
-    yield client
-    client.call(MsfRpcMethod.AuthLogout)
-
-
-@pytest.fixture()
 def cid(client):
     c_id = client.consoles.console().cid
     yield c_id
