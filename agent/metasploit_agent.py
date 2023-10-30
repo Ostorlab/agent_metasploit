@@ -148,7 +148,7 @@ class MetasploitAgent(
         if "RPORT" in selected_module.missing_required:
             selected_module["RPORT"] = rport
 
-        msf_options = json.loads(self.args.get("options"))
+        msf_options = json.loads(self.args.get("options") or '[]')
         for arg in msf_options:
             arg_name = arg["name"]
             if arg_name in selected_module.options:
