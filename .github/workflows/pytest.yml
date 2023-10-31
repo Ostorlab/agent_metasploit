@@ -33,12 +33,22 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install Metasploit.
+        run: |
+          sudo apt update
+          sudo apt install curl gpg
+          curl https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb > msfinstall
+          chmod +x msfinstall
+          sudo ./msfinstall
+          msfdb init
+          msfrpcd -P Ostorlab123 -p 55552
       - name: Install dependencies.
         run: |
           python -m pip install --upgrade pip
+          python -m pip install -e tools/pymetasploit3
           python -m pip install -r requirement.txt
           python -m pip install -r tests/test-requirement.txt
-      - name: Runnning tests with pytest.
+      - name: Running tests with pytest.
         run: |
           set -o pipefail
           pytest -m "not docker"
