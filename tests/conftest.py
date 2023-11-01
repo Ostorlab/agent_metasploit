@@ -42,6 +42,18 @@ def scan_message_link() -> message.Message:
 
 
 @pytest.fixture()
+def scan_message_ipv6() -> message.Message:
+    """Creates a message of type v3.asset.ip.v6 to be used by the agent for testing purposes."""
+    selector = "v3.asset.ip.v6"
+    msg_data = {
+        "host": "2001:db8:3333:4444:5555:6666:7777:8888",
+        "mask": "32",
+        "version": 6,
+    }
+    return message.Message.from_data(selector, data=msg_data)
+
+
+@pytest.fixture()
 def metasploitable_scan_message() -> message.Message:
     """Creates a message of type v3.asset.ip.v4 to be used by the agent for testing purposes."""
     selector = "v3.asset.ip.v4"
