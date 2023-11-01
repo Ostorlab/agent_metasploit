@@ -70,7 +70,7 @@ def testAuxiliaryExecute_whenVulnerable_returnFindings(
 
     assert len(agent_mock) == 1
     vulnerability_finding = agent_mock[0].data
-    assert vulnerability_finding["title"] == "Metasploit vulnerability detection"
+    assert vulnerability_finding["title"] == "Joomla Version Scanner"
     assert vulnerability_finding["risk_rating"] == "HIGH"
     assert vulnerability_finding["technical_detail"] == (
         "Using `auxiliary` module `scanner/http/joomla_version`\n"
@@ -118,7 +118,7 @@ def testExploitCheck_whenVulnerable_returnFindings(
 
     assert len(agent_mock) == 1
     vulnerability_finding = agent_mock[0].data
-    assert vulnerability_finding["title"] == "Metasploit vulnerability detection"
+    assert vulnerability_finding["title"] == "DistCC Daemon Command Execution"
     assert vulnerability_finding["risk_rating"] == "HIGH"
     assert vulnerability_finding["technical_detail"] == (
         "Using `exploit` module `unix/misc/distcc_exec`\n"
@@ -159,7 +159,7 @@ def testExploitCheck_whenVulnerable_returnConsoleOutput(
 
     assert len(agent_mock) == 1
     vulnerability_finding = agent_mock[0].data
-    assert vulnerability_finding["title"] == "Metasploit vulnerability detection"
+    assert vulnerability_finding["title"] == "DistCC Daemon Command Execution"
     assert vulnerability_finding["risk_rating"] == "HIGH"
     assert vulnerability_finding["technical_detail"] == (
         "Using `exploit` module `unix/misc/distcc_exec`\n"
@@ -194,7 +194,7 @@ def testAuxiliaryPortScan_whenResultsFound_returnOpenPorts(
 
     assert len(agent_mock) == 1
     vulnerability_finding = agent_mock[0].data
-    assert vulnerability_finding["title"] == "Metasploit vulnerability detection"
+    assert vulnerability_finding["title"] == "TCP Port Scanner"
     assert vulnerability_finding["risk_rating"] == "HIGH"
     assert "443 - TCP OPEN" in vulnerability_finding["technical_detail"]
     assert "Target: www.google.com" in vulnerability_finding["technical_detail"]

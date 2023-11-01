@@ -127,7 +127,7 @@ class MetasploitAgent(
             technical_detail += f"Message: {module_output}"
 
         entry = kb.KB.WEB_GENERIC
-        entry.title = "Metasploit vulnerability detection"
+        entry.title = selected_module.name or "Metasploit generic vulnerability entry"
         self.report_vulnerability(
             entry=entry,
             technical_detail=technical_detail,
