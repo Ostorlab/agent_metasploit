@@ -13,7 +13,7 @@ def testExploitCheck_whenSafe_returnNone(
     agent_mock: list[message.Message],
     scan_message: message.Message,
 ) -> None:
-    """Unit test for agent metasploit"""
+    """Unit test for agent metasploit exploit check, case when target is safe"""
     agent_instance.settings.args = [
         utils_definitions.Arg(
             name="module",
@@ -32,7 +32,7 @@ def testAuxiliaryExecute_whenSafe_returnNone(
     agent_mock: list[message.Message],
     scan_message: message.Message,
 ) -> None:
-    """Unit test for agent metasploit"""
+    """Unit test for agent metasploit auxiliary execute, case when target is safe"""
     agent_instance.settings.args = [
         utils_definitions.Arg(
             name="module",
@@ -53,7 +53,7 @@ def testAuxiliaryExecute_whenVulnerable_returnFindings(
     scan_message: message.Message,
     auxiliary_console_output: str,
 ) -> None:
-    """Unit test for agent metasploit"""
+    """Unit test for agent metasploit auxiliary execute, case when target is vulnerable"""
     agent_instance.settings.args = [
         utils_definitions.Arg(
             name="module",
@@ -89,7 +89,7 @@ def testExploitCheck_whenVulnerable_returnFindings(
     agent_mock: list[message.Message],
     metasploitable_scan_message: message.Message,
 ) -> None:
-    """Unit test for agent metasploit"""
+    """Unit test for agent metasploit exploit check, case when target is vulnerable"""
     mocker.patch(
         "pymetasploit3.msfrpc.MsfModule.check_exploit",
         return_value={"job_id": 10, "uuid": "CzwatViyCW2tJABg0FiYfHeC"},
@@ -134,7 +134,7 @@ def testExploitCheck_whenVulnerable_returnConsoleOutput(
     metasploitable_scan_message: message.Message,
     exploit_console_output: str,
 ) -> None:
-    """Unit test for agent metasploit"""
+    """Unit test for agent metasploit exploit check, case when target is vulnerable (console output)"""
     mocker.patch(
         "pymetasploit3.msfrpc.MsfModule.check_exploit",
         return_value={"job_id": 10, "uuid": "CzwatViyCW2tJABg0FiYfHeC"},
@@ -176,7 +176,7 @@ def testAuxiliaryPortScan_whenResultsFound_returnOpenPorts(
     scan_message: message.Message,
     exploit_console_output: str,
 ) -> None:
-    """Unit test for agent metasploit"""
+    """Unit test for agent metasploit auxiliary run, case when results are found"""
     agent_instance.settings.args = [
         utils_definitions.Arg(
             name="module",
