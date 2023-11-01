@@ -1,5 +1,5 @@
 FROM kalilinux/kali-rolling:latest
-RUN apt-get update && apt-get install -y python3 \
+RUN apt-get update && apt-get install -y python3.11 \
                                          python3-pip \
                                          metasploit-framework
 COPY requirement.txt /requirement.txt

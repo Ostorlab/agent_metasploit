@@ -73,7 +73,7 @@ class MetasploitAgent(
         if module is None:
             raise ArgumentError("Metasploit module must be specified.")
 
-        vhost, rport = self._prepare_target(message)
+        vhost, rport = self.prepare_target(message)
 
         try:
             module_type, module_name = module.split("/", 1)
@@ -165,12 +165,10 @@ class MetasploitAgent(
         """Returns the port to be used for the target."""
         if message.data.get("port") is not None:
             return int(message.data["port"])
-        elif self.args.get("port") is not None:
-            return int(str(self.args.get("port")))
         else:
             return DEFAULT_PORT
 
-    def _prepare_target(self, message: m.Message) -> tuple[str, int]:
+    def prepare_target(self, message: m.Message) -> tuple[str, int]:
         """Prepare targets based on type, if a domain name is provided, port and protocol are collected
         from the config."""
         if (host := message.data.get("host")) is not None:

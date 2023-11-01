@@ -202,3 +202,31 @@ def testAuxiliaryPortScan_whenResultsFound_returnOpenPorts(
         "[*] Auxiliary module execution completed"
         in vulnerability_finding["technical_detail"]
     )
+
+
+def testPrepareTarget_whenDomainAsset_returnResult(
+    agent_instance: msf_agent.MetasploitAgent, scan_message: message.Message
+) -> None:
+    rhost, rport = agent_instance.prepare_target(scan_message)
+
+    assert rhost == "www.google.com"
+    assert rport == 443
+
+
+def testPrepareTarget_whenIPAsset_returnResult(
+    agent_instance: msf_agent.MetasploitAgent,
+    metasploitable_scan_message: message.Message,
+) -> None:
+    rhost, rport = agent_instance.prepare_target(metasploitable_scan_message)
+
+    assert rhost == "192.168.1.17"
+    assert rport == 443
+
+
+def testPrepareTarget_whenLinkAsset_returnResult(
+    agent_instance: msf_agent.MetasploitAgent, scan_message_link: message.Message
+) -> None:
+    rhost, rport = agent_instance.prepare_target(scan_message_link)
+
+    assert rhost == "www.google.com"
+    assert rport == 443
