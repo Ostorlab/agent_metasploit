@@ -3,7 +3,6 @@ import json
 import logging
 import socket
 import time
-from urllib import parse as urlparser
 
 from ostorlab.agent import agent, definitions as agent_definitions
 from ostorlab.agent.kb import kb
@@ -25,8 +24,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-SCHEME_TO_PORT = {"http": 80, "https": 443}
-DEFAULT_PORT = 443
+
 MODULE_TIMEOUT = 180
 
 
@@ -73,7 +71,7 @@ class MetasploitAgent(
         if module is None:
             raise ArgumentError("Metasploit module must be specified.")
 
-        vhost, rport = self.prepare_target(message)
+        vhost, rport = utils.prepare_target(message)
 
         try:
             module_type, module_name = module.split("/", 1)
@@ -160,31 +158,6 @@ class MetasploitAgent(
             )
 
         return selected_module
-
-    def _get_port(self, message: m.Message) -> int:
-        """Returns the port to be used for the target."""
-        if message.data.get("port") is not None:
-            return int(message.data["port"])
-        else:
-            return DEFAULT_PORT
-
-    def prepare_target(self, message: m.Message) -> tuple[str, int]:
-        """Prepare targets based on type, if a domain name is provided, port and protocol are collected
-        from the config."""
-        if (host := message.data.get("host")) is not None:
-            port = self._get_port(message)
-            return host, port
-        elif (host := message.data.get("name")) is not None:
-            port = self._get_port(message)
-            return host, port
-        elif (url := message.data.get("url")) is not None:
-            parsed_url = urlparser.urlparse(url)
-            host = parsed_url.netloc
-            scheme = parsed_url.scheme
-            port = SCHEME_TO_PORT.get(scheme) or DEFAULT_PORT
-            return host, port
-        else:
-            raise NotImplementedError
 
 
 if __name__ == "__main__":
