@@ -1,14 +1,11 @@
 """Pytest fixtures for agent Metasploit"""
 import pathlib
 import random
-import subprocess
 
 import pytest
 from ostorlab.agent import definitions as agent_definitions
 from ostorlab.agent.message import message
 from ostorlab.runtimes import definitions as runtime_definitions
-from pymetasploit3 import msfrpc
-from pytest_mock import plugin
 
 from agent import metasploit_agent as msf_agent
 

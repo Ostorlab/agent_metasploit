@@ -6,7 +6,6 @@ from ostorlab.utils import defintions as utils_definitions
 from pytest_mock import plugin
 
 from agent import metasploit_agent as msf_agent
-from pymetasploit3 import msfrpc
 
 
 def testExploitCheck_whenSafe_returnNone(
