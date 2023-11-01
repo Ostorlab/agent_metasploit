@@ -185,7 +185,7 @@ def testAuxiliaryPortScan_whenResultsFound_returnOpenPorts(
         ),
         utils_definitions.Arg(
             name="options",
-            type="string",
+            type="array",
             value=json.dumps('[{"name": "PORTS", "value": "443,80"}]').encode(),
         ),
     ]
