@@ -13,6 +13,7 @@ def initialize_msf_rpc() -> msfrpc.MsfRpcClient:
     Returns:
         - msfrpc client
     """
+    subprocess.run(["pkill", "-f", "msfrpcd"])
     msfrpc_pwd = "".join([random.choice(string.ascii_letters) for _ in range(12)])
     command = ["msfrpcd", "-P", msfrpc_pwd, "-p", "55552"]
     subprocess.run(command, capture_output=False, check=False)
