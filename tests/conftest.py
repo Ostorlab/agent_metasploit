@@ -12,25 +12,9 @@ from pytest_mock import plugin
 
 from agent import metasploit_agent as msf_agent
 
-MSFRPCD_PWD = "Ostorlab123"
 
-
-@pytest.fixture(scope="module")
-def msfrpc_client() -> msfrpc.MsfRpcClient:
-    """Start msfrpcd and connect to it"""
-    command = ["msfrpcd", "-P", MSFRPCD_PWD, "-p", "55552"]
-    subprocess.run(command, capture_output=False, check=False)
-    client = msfrpc.MsfRpcClient(MSFRPCD_PWD, ssl=True, port=55552)
-    return client
-
-
-@pytest.fixture()
-def agent_instance(
-    agent_persist_mock: dict[str | bytes, str | bytes],
-    mocker: plugin.MockerFixture,
-    msfrpc_client: msfrpc.MsfRpcClient,  # pylint: disable=redefined-outer-name
-) -> msf_agent.MetasploitAgent:
-    mocker.patch("agent.utils.initialize_msf_rpc", return_value=msfrpc_client)
+@pytest.fixture(scope="session")
+def agent_instance() -> msf_agent.MetasploitAgent:
     with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:
         definition = agent_definitions.AgentDefinition.from_yaml(yaml_o)
         settings = runtime_definitions.AgentSettings(

@@ -41,7 +41,6 @@ jobs:
           chmod +x msfinstall
           sudo ./msfinstall
           msfdb init
-          msfrpcd -P Ostorlab123 -p 55552
       - name: Install dependencies.
         run: |
           python -m pip install --upgrade pip

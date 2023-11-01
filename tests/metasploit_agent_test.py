@@ -88,7 +88,6 @@ def testExploitCheck_whenVulnerable_returnFindings(
     agent_instance: msf_agent.MetasploitAgent,
     mocker: plugin.MockerFixture,
     agent_mock: list[message.Message],
-    msfrpc_client: msfrpc.MsfRpcClient,
     metasploitable_scan_message: message.Message,
 ) -> None:
     """Unit test for agent metasploit"""

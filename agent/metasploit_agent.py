@@ -75,8 +75,8 @@ class MetasploitAgent(
 
         vhost, rport = self._prepare_target(message)
 
-        module_type, module_name = module.split("/", 1)
         try:
+            module_type, module_name = module.split("/", 1)
             selected_module = self._client.modules.use(module_type, module_name)
         except msfrpc.MsfRpcError as exc:
             raise ModuleError("Specified module does not exist") from exc
