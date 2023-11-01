@@ -169,3 +169,38 @@ def testExploitCheck_whenVulnerable_returnConsoleOutput(
         "Message: \n"
         "[+] 192.168.1.17:3632 - The target is vulnerable.\n"
     )
+
+
+def testAuxiliaryPortScan_whenResultsFound_returnOpenPorts(
+    agent_instance: msf_agent.MetasploitAgent,
+    mocker: plugin.MockerFixture,
+    agent_mock: list[message.Message],
+    scan_message: message.Message,
+    exploit_console_output: str,
+) -> None:
+    """Unit test for agent metasploit"""
+    agent_instance.settings.args = [
+        utils_definitions.Arg(
+            name="module",
+            type="string",
+            value=json.dumps("auxiliary/scanner/portscan/tcp").encode(),
+        ),
+        utils_definitions.Arg(
+            name="options",
+            type="string",
+            value=json.dumps('[{"name": "PORTS", "value": "443,80"}]').encode(),
+        ),
+    ]
+
+    agent_instance.process(scan_message)
+
+    assert len(agent_mock) == 1
+    vulnerability_finding = agent_mock[0].data
+    assert vulnerability_finding["title"] == "Metasploit vulnerability detection"
+    assert vulnerability_finding["risk_rating"] == "HIGH"
+    assert "443 - TCP OPEN" in vulnerability_finding["technical_detail"]
+    assert "Target: www.google.com" in vulnerability_finding["technical_detail"]
+    assert (
+        "[*] Auxiliary module execution completed"
+        in vulnerability_finding["technical_detail"]
+    )
