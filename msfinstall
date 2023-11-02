@@ -38,5 +38,5 @@ echo "Running: sudo apt install -f"
 sudo apt install -f
 
 # Install Metasploit
-echo "Running: sudo apt install metasploit-framework"
-sudo apt install -y metasploit-framework
+echo "Running: sudo aptitude install -y metasploit-framework"
+sudo aptitude install -y metasploit-framework
