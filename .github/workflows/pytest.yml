@@ -35,10 +35,8 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Metasploit.
         run: |
-          echo "deb http://http.kali.org/kali kali-rolling main non-free contrib" | sudo tee /etc/apt/sources.list.d/kali.list 
-          echo "deb-src http://http.kali.org/kali kali-rolling main non-free contrib" | sudo tee -a /etc/apt/sources.list.d/kali.list
-          sudo apt update
-          sudo apt install metasploit-framework
+          chmod +x msfinstall
+          sudo ./msfinstall
           msfdb init
       - name: Install dependencies.
         run: |
