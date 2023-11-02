@@ -35,8 +35,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Metasploit.
         run: |
+          sudo apt update
+          sudo apt install curl gpg
+          curl https://raw.githubusercontent.com/rapid7/metasploit-omnibus/master/config/templates/metasploit-framework-wrappers/msfupdate.erb > msfinstall
           chmod +x msfinstall
-          ./msfinstall
+          sudo ./msfinstall
           msfdb init
       - name: Install dependencies.
         run: |
