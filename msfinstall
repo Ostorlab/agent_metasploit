@@ -37,6 +37,10 @@ sudo apt update
 echo "Running: sudo apt install -f"
 sudo apt install -f
 
+# Install Aptitude
+echo "Running: sudo apt install aptitude"
+sudo apt install aptitude
+
 # Install Metasploit
 echo "Running: sudo aptitude install -y metasploit-framework"
 sudo aptitude install -y metasploit-framework
