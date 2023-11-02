@@ -33,6 +33,10 @@ rm kali-archive-keyring_2022.1_all.deb
 echo "Running: sudo apt update"
 sudo apt update
 
+# Fix broken packages
+echo "Running: sudo apt install -f"
+sudo apt install -f
+
 # Install Metasploit
 echo "Running: sudo apt install metasploit-framework"
 sudo apt install -y metasploit-framework
