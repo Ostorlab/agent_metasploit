@@ -160,11 +160,6 @@ def testAuxiliaryPortScan_whenResultsFound_returnOpenPorts(
     """Unit test for agent metasploit auxiliary run, case when results are found"""
     agent_instance.settings.args = [
         utils_definitions.Arg(
-            name="module",
-            type="string",
-            value=json.dumps("auxiliary/scanner/portscan/tcp").encode(),
-        ),
-        utils_definitions.Arg(
             name="options",
             type="array",
             value=json.dumps('[{"name": "PORTS", "value": "443,80"}]').encode(),
