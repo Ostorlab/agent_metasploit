@@ -119,7 +119,9 @@ class MetasploitAgent(
 
         self._emit_results(module_instance, technical_detail)
 
-    def _emit_results(self, module_instance, technical_detail):
+    def _emit_results(
+        self, module_instance: msfrpc.MsfModule, technical_detail: str
+    ) -> None:
         entry_title = module_instance.name or "Metasploit generic vulnerability entry"
         msf_references = {}
         for reference in module_instance.references:
