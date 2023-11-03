@@ -64,6 +64,6 @@ def initialize_msf_rpc() -> msfrpc.MsfRpcClient:
         - msfrpc client
     """
     command = ["msfrpcd", "-P", MSFRPCD_PWD, "-p", "55555"]
-    subprocess.run(command, check=False)
+    subprocess.run(command, check=False, capture_output=False)
     client = msfrpc.MsfRpcClient(MSFRPCD_PWD, ssl=True, port=55555)
     return client
