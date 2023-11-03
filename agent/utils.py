@@ -1,12 +1,23 @@
 """Utilities for agent Metasploit"""
+import logging
 import random
 import string
 import subprocess
 from urllib import parse as urlparser
 
 from ostorlab.agent.message import message as m
+from rich import logging as rich_logging
 
 from pymetasploit3 import msfrpc
+
+logging.basicConfig(
+    format="%(message)s",
+    datefmt="[%X]",
+    level="INFO",
+    force=True,
+    handlers=[rich_logging.RichHandler(rich_tracebacks=True)],
+)
+logger = logging.getLogger(__name__)
 
 SCHEME_TO_PORT = {
     "http": 80,
@@ -27,6 +38,7 @@ SCHEME_TO_PORT = {
     "vnc": 5900,
     "git": 9418,
 }
+MSFRPC_PORT = 55555
 DEFAULT_PORT = 443
 
 
@@ -64,9 +76,11 @@ def initialize_msf_rpc() -> msfrpc.MsfRpcClient:
     Returns:
         - msfrpc client
     """
-    subprocess.run(["pkill", "-f", "msfrpcd"], check=False)
+    logger.info("Killing previous instances of msfrpcd service")
+    subprocess.run(["pkill", "-f", "msfrpcd"], check=False, capture_output=True)
     msfrpc_pwd = "".join([random.choice(string.ascii_letters) for _ in range(12)])
-    command = ["msfrpcd", "-P", msfrpc_pwd, "-p", "55555"]
+    command = ["msfrpcd", "-P", msfrpc_pwd, "-p", str(MSFRPC_PORT)]
     subprocess.run(command, capture_output=False, check=False)
-    client = msfrpc.MsfRpcClient(msfrpc_pwd, ssl=True, port=55555)
+    logger.info("msfrpcd is listening on port %d", MSFRPC_PORT)
+    client = msfrpc.MsfRpcClient(msfrpc_pwd, ssl=True, port=MSFRPC_PORT)
     return client

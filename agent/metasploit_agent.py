@@ -1,5 +1,4 @@
 """Ostorlab Agent implementation for metasploit"""
-import json
 import logging
 import socket
 import time
@@ -164,7 +163,7 @@ class MetasploitAgent(
         if "RPORT" in selected_module.missing_required:
             selected_module["RPORT"] = rport
 
-        msf_options = json.loads(self.args.get("options") or "[]")
+        msf_options = self.args.get("options") or []
         for arg in msf_options:
             arg_name = arg["name"]
             if arg_name in selected_module.options:
@@ -179,5 +178,5 @@ class MetasploitAgent(
 
 
 if __name__ == "__main__":
-    logger.info("Starting Agent ...")
+    logger.info("Starting Agent...")
     MetasploitAgent.main()

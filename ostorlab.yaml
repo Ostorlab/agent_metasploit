@@ -17,7 +17,8 @@ description: |
   
   Supported agent flags:
   
-  * `module` (`-m`): Metasploit module.
+  * `module`: Metasploit module.
+  * `options`: Metasploit module options (RHOSTS, RPORT...)
   
    ### Install directly from ostorlab agent store
    ```shell
@@ -50,6 +51,34 @@ description: |
       ```shell
       ostorlab scan run --agent agent/[ORGANIZATION]/metasploit ip 8.8.8.8
       ```
+  ## Example run
+  
+  - Payload: `auxiliary/scanner/portscan/tcp`
+  - Options:
+    - PORTS: `80, 443`
+  
+  Example `agent_group.yaml` file to trigger the scan:
+  
+  ```yaml
+  kind: AgentGroup
+  description: | 
+    Agent group definition for Metasploit agent.
+    Payload: auxiliary/scanner/portscan/tcp
+  agents:
+    - key: agent//metasploit
+      args:
+        - name: module
+          type: string
+          value: 'auxiliary/scanner/portscan/tcp'
+        - name: options
+          type: array
+          value:
+            - name: "PORTS"
+              value: "80, 443"
+  ```
+  
+  `ostorlab scan run -g agent_group.yaml domain-name www.google.com`
+  
   ## License
   [Apache-2.0](./LICENSE)
 license: Apache-2.0
@@ -66,8 +95,8 @@ docker_build_root : .
 args:
   - name: "module"
     type: "string"
-    description: "Metasploit module."
+    description: "Metasploit module (exploit or auxiliary)."
   - name: "options"
     type: "array"
-    description: "Metasploit module options"
+    description: "Metasploit module options (RHOSTS, RPORT...)."
     value: []

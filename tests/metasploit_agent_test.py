@@ -1,5 +1,4 @@
 """Unit tests for agent Metasploit."""
-import json
 import pytest
 from ostorlab.agent.message import message
 from ostorlab.utils import defintions as utils_definitions
@@ -44,12 +43,11 @@ def testAuxiliaryExecute_whenVulnerable_returnFindings(
     mocker: plugin.MockerFixture,
     agent_mock: list[message.Message],
     scan_message: message.Message,
-    auxiliary_console_output: str,
 ) -> None:
     """Unit test for agent metasploit auxiliary execute, case when target is vulnerable"""
     mocker.patch(
         "pymetasploit3.msfrpc.MsfConsole.run_module_with_output",
-        return_value=auxiliary_console_output,
+        return_value=open("tests/msf_output/auxiliary.txt").read(),
     )
 
     agent_instance.process(scan_message)
@@ -117,7 +115,6 @@ def testExploitCheck_whenVulnerable_returnConsoleOutput(
     mocker: plugin.MockerFixture,
     agent_mock: list[message.Message],
     metasploitable_scan_message: message.Message,
-    exploit_console_output: str,
 ) -> None:
     """Unit test for agent metasploit exploit check, case when target is vulnerable (console output)"""
     mocker.patch(
@@ -130,7 +127,7 @@ def testExploitCheck_whenVulnerable_returnConsoleOutput(
     )
     mocker.patch(
         "pymetasploit3.msfrpc.MsfConsole.run_module_with_output",
-        return_value=exploit_console_output,
+        return_value=open("tests/msf_output/exploit.txt").read(),
     )
 
     agent_instance.process(metasploitable_scan_message)
@@ -155,14 +152,13 @@ def testAuxiliaryPortScan_whenResultsFound_returnOpenPorts(
     mocker: plugin.MockerFixture,
     agent_mock: list[message.Message],
     scan_message: message.Message,
-    exploit_console_output: str,
 ) -> None:
     """Unit test for agent metasploit auxiliary run, case when results are found"""
     agent_instance.settings.args = [
         utils_definitions.Arg(
             name="options",
             type="array",
-            value=json.dumps('[{"name": "PORTS", "value": "443,80"}]').encode(),
+            value=bytes('[{"name": "PORTS", "value": "443,80"}]', encoding="utf-8"),
         ),
     ]
 

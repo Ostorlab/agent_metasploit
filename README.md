@@ -21,7 +21,7 @@ This repository is an implementation of [Ostorlab Agent](https://pypi.org/projec
 To perform your first scan, simply run the following command:
 ```shell
 ostorlab scan run --install --agent agent/ostorlab/metasploit ip 8.8.8.8
-```
+``` 
 
 This command will download and install `agent/ostorlab/metasploit` and target the ip `8.8.8.8`.
 For more information, please refer to the [Ostorlab Documentation](https://github.com/Ostorlab/ostorlab/blob/main/README.md)
@@ -75,6 +75,33 @@ git clone https://github.com/Ostorlab/agent_metasploit.git && cd agent_metasploi
     ostorlab scan run --agent agent/[ORGANIZATION]/metasploit ip 8.8.8.8
     ```
 
+### Run agent metasploit with module options
+
+- Payload: `auxiliary/scanner/portscan/tcp`
+- Options:
+  - PORTS: `80, 443`
+
+Example `agent_group.yaml` file to trigger the scan:
+
+```yaml
+kind: AgentGroup
+description: | 
+  Agent group definition for Metasploit agent.
+  Payload: auxiliary/scanner/portscan/tcp
+agents:
+  - key: agent//metasploit
+    args:
+      - name: module
+        type: string
+        value: 'auxiliary/scanner/portscan/tcp'
+      - name: options
+        type: array
+        value:
+          - name: "PORTS"
+            value: "80, 443"
+```
+
+`ostorlab scan run -g agent_group.yaml domain-name www.google.com`
 
 ## License
 [Apache](./LICENSE)
