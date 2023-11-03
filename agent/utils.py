@@ -1,6 +1,4 @@
 """Utilities for agent Metasploit"""
-import random
-import string
 import subprocess
 from urllib import parse as urlparser
 
@@ -29,6 +27,7 @@ SCHEME_TO_PORT = {
 }
 DEFAULT_PORT = 443
 MSFRPCD_PWD = "Ostorlab123!"
+
 
 def _get_port(message: m.Message) -> int:
     """Returns the port to be used for the target."""
