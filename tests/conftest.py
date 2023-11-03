@@ -6,12 +6,15 @@ import pytest
 from ostorlab.agent import definitions as agent_definitions
 from ostorlab.agent.message import message
 from ostorlab.runtimes import definitions as runtime_definitions
+from ostorlab.utils import defintions as utils_definitions
+import json
 
 from agent import metasploit_agent as msf_agent
 
 
 @pytest.fixture(scope="session")
-def agent_instance() -> msf_agent.MetasploitAgent:
+def agent_instance(request) -> msf_agent.MetasploitAgent:
+    module = request.param
     with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:
         definition = agent_definitions.AgentDefinition.from_yaml(yaml_o)
         settings = runtime_definitions.AgentSettings(
@@ -22,6 +25,13 @@ def agent_instance() -> msf_agent.MetasploitAgent:
             healthcheck_port=random.randint(5000, 6000),
             redis_url="redis://guest:guest@localhost:6379",
         )
+        settings.args = [
+            utils_definitions.Arg(
+                name="module",
+                type="string",
+                value=json.dumps(module).encode(),
+            )
+        ]
         return msf_agent.MetasploitAgent(definition, settings)
 
 

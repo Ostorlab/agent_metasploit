@@ -1,6 +1,6 @@
 """Unit tests for agent Metasploit."""
 import json
-
+import pytest
 from ostorlab.agent.message import message
 from ostorlab.utils import defintions as utils_definitions
 from pytest_mock import plugin
@@ -8,44 +8,37 @@ from pytest_mock import plugin
 from agent import metasploit_agent as msf_agent
 
 
+@pytest.mark.parametrize(
+    "agent_instance", ["exploit/windows/http/exchange_proxyshell_rce"], indirect=True
+)
 def testExploitCheck_whenSafe_returnNone(
     agent_instance: msf_agent.MetasploitAgent,
     agent_mock: list[message.Message],
     scan_message: message.Message,
 ) -> None:
     """Unit test for agent metasploit exploit check, case when target is safe"""
-    agent_instance.settings.args = [
-        utils_definitions.Arg(
-            name="module",
-            type="string",
-            value=json.dumps("exploit/windows/http/exchange_proxyshell_rce").encode(),
-        )
-    ]
-
     agent_instance.process(scan_message)
 
     assert len(agent_mock) == 0
 
 
+@pytest.mark.parametrize(
+    "agent_instance", ["auxiliary/scanner/http/exchange_proxylogon"], indirect=True
+)
 def testAuxiliaryExecute_whenSafe_returnNone(
     agent_instance: msf_agent.MetasploitAgent,
     agent_mock: list[message.Message],
     scan_message: message.Message,
 ) -> None:
     """Unit test for agent metasploit auxiliary execute, case when target is safe"""
-    agent_instance.settings.args = [
-        utils_definitions.Arg(
-            name="module",
-            type="string",
-            value=json.dumps("auxiliary/scanner/http/exchange_proxylogon").encode(),
-        )
-    ]
-
     agent_instance.process(scan_message)
 
     assert len(agent_mock) == 0
 
 
+@pytest.mark.parametrize(
+    "agent_instance", ["auxiliary/scanner/http/joomla_version"], indirect=True
+)
 def testAuxiliaryExecute_whenVulnerable_returnFindings(
     agent_instance: msf_agent.MetasploitAgent,
     mocker: plugin.MockerFixture,
@@ -54,13 +47,6 @@ def testAuxiliaryExecute_whenVulnerable_returnFindings(
     auxiliary_console_output: str,
 ) -> None:
     """Unit test for agent metasploit auxiliary execute, case when target is vulnerable"""
-    agent_instance.settings.args = [
-        utils_definitions.Arg(
-            name="module",
-            type="string",
-            value=json.dumps("auxiliary/scanner/http/joomla_version").encode(),
-        )
-    ]
     mocker.patch(
         "pymetasploit3.msfrpc.MsfConsole.run_module_with_output",
         return_value=auxiliary_console_output,
@@ -83,6 +69,9 @@ def testAuxiliaryExecute_whenVulnerable_returnFindings(
     )
 
 
+@pytest.mark.parametrize(
+    "agent_instance", ["exploit/unix/misc/distcc_exec"], indirect=True
+)
 def testExploitCheck_whenVulnerable_returnFindings(
     agent_instance: msf_agent.MetasploitAgent,
     mocker: plugin.MockerFixture,
@@ -106,13 +95,6 @@ def testExploitCheck_whenVulnerable_returnFindings(
             },
         },
     )
-    agent_instance.settings.args = [
-        utils_definitions.Arg(
-            name="module",
-            type="string",
-            value=json.dumps("exploit/unix/misc/distcc_exec").encode(),
-        )
-    ]
 
     agent_instance.process(metasploitable_scan_message)
 
@@ -127,6 +109,9 @@ def testExploitCheck_whenVulnerable_returnFindings(
     )
 
 
+@pytest.mark.parametrize(
+    "agent_instance", ["exploit/unix/misc/distcc_exec"], indirect=True
+)
 def testExploitCheck_whenVulnerable_returnConsoleOutput(
     agent_instance: msf_agent.MetasploitAgent,
     mocker: plugin.MockerFixture,
@@ -143,13 +128,6 @@ def testExploitCheck_whenVulnerable_returnConsoleOutput(
         "pymetasploit3.msfrpc.JobManager.info_by_uuid",
         return_value={"status": "completed", "result": None},
     )
-    agent_instance.settings.args = [
-        utils_definitions.Arg(
-            name="module",
-            type="string",
-            value=json.dumps("exploit/unix/misc/distcc_exec").encode(),
-        )
-    ]
     mocker.patch(
         "pymetasploit3.msfrpc.MsfConsole.run_module_with_output",
         return_value=exploit_console_output,
@@ -169,6 +147,9 @@ def testExploitCheck_whenVulnerable_returnConsoleOutput(
     )
 
 
+@pytest.mark.parametrize(
+    "agent_instance", ["auxiliary/scanner/portscan/tcp"], indirect=True
+)
 def testAuxiliaryPortScan_whenResultsFound_returnOpenPorts(
     agent_instance: msf_agent.MetasploitAgent,
     mocker: plugin.MockerFixture,
@@ -197,7 +178,7 @@ def testAuxiliaryPortScan_whenResultsFound_returnOpenPorts(
     assert vulnerability_finding["title"] == "TCP Port Scanner"
     assert vulnerability_finding["risk_rating"] == "HIGH"
     assert "443 - TCP OPEN" in vulnerability_finding["technical_detail"]
-    assert "Target: www.google.com" in vulnerability_finding["technical_detail"]
+    assert "80 - TCP OPEN" in vulnerability_finding["technical_detail"]
     assert (
         "[*] Auxiliary module execution completed"
         in vulnerability_finding["technical_detail"]

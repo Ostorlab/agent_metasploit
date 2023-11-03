@@ -24,16 +24,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 MODULE_TIMEOUT = 180
 
 
 class Error(Exception):
     """Base custom error class."""
-
-
-class ArgumentError(Error):
-    """Error when a required argument is missing"""
 
 
 class ModuleError(Error):
@@ -59,6 +54,15 @@ class MetasploitAgent(
         persist_mixin.AgentPersistMixin.__init__(self, agent_settings)
         self._client = utils.initialize_msf_rpc()
         self._cid = self._client.consoles.console().cid
+        module = self.args.get("module")
+        if module is None:
+            raise ValueError("Metasploit module must be specified.")
+        try:
+            module_type, module_name = module.split("/", 1)
+            self.selected_module = self._client.modules.use(module_type, module_name)
+        except msfrpc.MsfRpcError as exc:
+            raise ModuleError("Specified module does not exist") from exc
+        logger.info("Selected metasploit module: %s", self.selected_module.modulename)
 
     def process(self, message: m.Message) -> None:
         """Trigger Agent metasploit and emit findings
@@ -67,30 +71,16 @@ class MetasploitAgent(
             message: A message containing the path and the content of the file to be processed
 
         """
-        module = self.args.get("module")
-        if module is None:
-            raise ArgumentError("Metasploit module must be specified.")
-
         vhost, rport = utils.prepare_target(message)
-
-        try:
-            module_type, module_name = module.split("/", 1)
-            selected_module = self._client.modules.use(module_type, module_name)
-        except msfrpc.MsfRpcError as exc:
-            raise ModuleError("Specified module does not exist") from exc
-
-        logger.info("Selected metasploit module: %s", selected_module.modulename)
-        selected_module = self._set_module_args(selected_module, vhost, rport)
-
-        if module_type == "exploit":
-            mode = "check"
-            job = selected_module.check_exploit()
-        elif module_type == "auxiliary":
-            mode = "exploit"
-            job = selected_module.execute()
+        module_instance = self._set_module_args(self.selected_module, vhost, rport)
+        if module_instance.moduletype == "exploit":
+            job = module_instance.check_exploit()
+        elif module_instance.moduletype == "auxiliary":
+            job = module_instance.execute()
         else:
-            raise ArgumentError("Metasploit module should be exploit or auxiliary.")
-
+            raise ValueError(
+                f"{module_instance.moduletype} module type is not implemented"
+            )
         job_uuid = job["uuid"]
         started_timestamp = time.time()
         results = None
@@ -110,22 +100,48 @@ class MetasploitAgent(
         if isinstance(results, dict) and results.get("code") == "safe":
             return
 
-        technical_detail = f"Using `{module_type}` module `{module_name}`\n"
-        technical_detail += f"Target: {vhost}\n"
+        target = module_instance.runoptions.get(
+            "VHOST"
+        ) or module_instance.runoptions.get("RHOSTS")
+        technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
+        technical_detail += f"Target: {target}\n"
 
         if isinstance(results, dict) and results.get("code") == "vulnerable":
             technical_detail += f'Message: {results["message"]}'
         else:
             console_output = self._client.consoles.console(
                 self._cid
-            ).run_module_with_output(selected_module, mode=mode)
+            ).run_module_with_output(module_instance)
             module_output = console_output.split("WORKSPACE => Ostorlab")[1]
             if "[-]" in module_output:
                 return
             technical_detail += f"Message: {module_output}"
 
-        entry = kb.KB.WEB_GENERIC
-        entry.title = selected_module.name or "Metasploit generic vulnerability entry"
+        self._emit_results(module_instance, technical_detail)
+
+    def _emit_results(self, module_instance, technical_detail):
+        entry_title = module_instance.name or "Metasploit generic vulnerability entry"
+        msf_references = {}
+        for reference in module_instance.references:
+            if isinstance(reference, list) and len(reference) == 2:
+                msf_references[reference[0]] = reference[1]
+        entry = kb.Entry(
+            title=entry_title,
+            risk_rating="HIGH",
+            short_description=module_instance.description,
+            description=module_instance.description,
+            references=msf_references,
+            recommendation=(
+                "- Make sure to install the latest security patches from software vendor "
+                "- Update to the latest software version"
+            ),
+            security_issue=True,
+            privacy_issue=False,
+            has_public_exploit=False,
+            targeted_by_malware=False,
+            targeted_by_ransomware=False,
+            targeted_by_nation_state=False,
+        )
         self.report_vulnerability(
             entry=entry,
             technical_detail=technical_detail,
@@ -137,7 +153,7 @@ class MetasploitAgent(
     ) -> msfrpc.MsfModule:
         rhost = socket.gethostbyname(vhost)
         if "RHOSTS" not in selected_module.required:
-            raise ArgumentError(
+            raise ValueError(
                 f"Argument not implemented, accepted args: {str(selected_module.required)}"
             )
         selected_module["RHOSTS"] = rhost
@@ -153,7 +169,7 @@ class MetasploitAgent(
                 selected_module[arg_name] = arg["value"]
 
         if len(selected_module.missing_required) > 0:
-            raise ArgumentError(
+            raise ValueError(
                 f"The following arguments are missing: {str(selected_module.missing_required)}"
             )
 
