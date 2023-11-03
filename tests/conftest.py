@@ -1,19 +1,19 @@
 """Pytest fixtures for agent Metasploit"""
+import json
 import pathlib
 import random
-
+from typing import Any
 import pytest
 from ostorlab.agent import definitions as agent_definitions
 from ostorlab.agent.message import message
 from ostorlab.runtimes import definitions as runtime_definitions
 from ostorlab.utils import defintions as utils_definitions
-import json
 
 from agent import metasploit_agent as msf_agent
 
 
 @pytest.fixture(scope="session")
-def agent_instance(request) -> msf_agent.MetasploitAgent:
+def agent_instance(request: Any) -> msf_agent.MetasploitAgent:
     module = request.param
     with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:
         definition = agent_definitions.AgentDefinition.from_yaml(yaml_o)
