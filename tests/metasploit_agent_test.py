@@ -45,10 +45,13 @@ def testAuxiliaryExecute_whenVulnerable_returnFindings(
     scan_message: message.Message,
 ) -> None:
     """Unit test for agent metasploit auxiliary execute, case when target is vulnerable"""
-    mocker.patch(
-        "pymetasploit3.msfrpc.MsfConsole.run_module_with_output",
-        return_value=open("tests/msf_output/auxiliary.txt").read(),
-    )
+    with open(
+        "tests/msf_output/auxiliary.txt", encoding="utf-8"
+    ) as auxiliary_output_file:
+        mocker.patch(
+            "pymetasploit3.msfrpc.MsfConsole.run_module_with_output",
+            return_value=auxiliary_output_file.read(),
+        )
 
     agent_instance.process(scan_message)
 
@@ -125,10 +128,11 @@ def testExploitCheck_whenVulnerable_returnConsoleOutput(
         "pymetasploit3.msfrpc.JobManager.info_by_uuid",
         return_value={"status": "completed", "result": None},
     )
-    mocker.patch(
-        "pymetasploit3.msfrpc.MsfConsole.run_module_with_output",
-        return_value=open("tests/msf_output/exploit.txt").read(),
-    )
+    with open("tests/msf_output/exploit.txt", encoding="utf-8") as exploit_output_file:
+        mocker.patch(
+            "pymetasploit3.msfrpc.MsfConsole.run_module_with_output",
+            return_value=exploit_output_file.read(),
+        )
 
     agent_instance.process(metasploitable_scan_message)
 
