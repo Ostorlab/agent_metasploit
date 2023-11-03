@@ -1257,6 +1257,9 @@ class MsfModule(object):
         - mname : the module name (e.g. 'exploits/windows/http/icecast_header')
         """
 
+        self.name = ""
+        self.description = ""
+        self.references = []
         self.moduletype = mtype
         self.modulename = mname
         self.rpc = rpc
@@ -2265,9 +2268,7 @@ class MsfConsole(object):
             if c["id"] == self.cid:
                 return c["busy"]
 
-    def run_module_with_output(
-        self, mod, mode="check", payload=None, run_as_job=False, timeout=301
-    ):
+    def run_module_with_output(self, mod, payload=None, run_as_job=False, timeout=301):
         """
         Execute a module and wait for the returned data
 
@@ -2314,12 +2315,12 @@ class MsfConsole(object):
                 )
         options_str += "set WORKSPACE Ostorlab\n"
         # Run the module without directly opening a command line
-        if mode == "check":
+        if mod.moduletype == "exploit":
             options_str += "check -z"
-        elif mode == "exploit":
+        elif mod.moduletype == "auxiliary":
             options_str += "run -z"
         else:
-            raise ValueError("Invalid Mode")
+            raise ValueError("%s module type is not implemented", mod.moduletype)
         if run_as_job:
             options_str += " -j"
         self.rpc.consoles.console(self.cid).write(options_str)
