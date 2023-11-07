@@ -37,6 +37,7 @@ jobs:
         run: |
           sudo snap install metasploit-framework
           msfdb init
+          msfrpcd -P Ostorlab123 -p 55555
       - name: Install dependencies.
         run: |
           python -m pip install --upgrade pip
