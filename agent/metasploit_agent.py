@@ -2,7 +2,9 @@
 import logging
 import socket
 import time
+from typing import Any
 
+import timeout_decorator
 from ostorlab.agent import agent, definitions as agent_definitions
 from ostorlab.agent.kb import kb
 from ostorlab.agent.message import message as m
@@ -81,20 +83,7 @@ class MetasploitAgent(
                 f"{module_instance.moduletype} module type is not implemented"
             )
         job_uuid = job["uuid"]
-        started_timestamp = time.time()
-        results = None
-        while True:
-            job_result = self._client.jobs.info_by_uuid(job_uuid)
-            status = job_result["status"]
-            if status == "completed":
-                results = job_result["result"]
-                break
-            if status == "errored":
-                logger.error("Encountered an unexpected error: %s", job_result["error"])
-                break
-            if time.time() - started_timestamp > MODULE_TIMEOUT:
-                raise CheckError(f"Timeout while running job: {job_uuid}")
-            time.sleep(5)
+        results = self._get_job_results(job_uuid)
 
         if isinstance(results, dict) and results.get("code") == "safe":
             return
@@ -117,6 +106,22 @@ class MetasploitAgent(
             technical_detail += f"Message: \n```{module_output}```"
 
         self._emit_results(module_instance, technical_detail)
+
+    @timeout_decorator.timeout(MODULE_TIMEOUT, timeout_exception=ModuleError)  # type: ignore
+    def _get_job_results(self, job_uuid: int) -> dict[str, Any] | list[str] | None:
+        results = None
+        while True:
+            job_result = self._client.jobs.info_by_uuid(job_uuid)
+            status = job_result["status"]
+            if status == "completed":
+                results = job_result["result"]
+                break
+            if status == "errored":
+                logger.error("Encountered an unexpected error: %s", job_result["error"])
+                break
+            time.sleep(10)
+
+        return results
 
     def _emit_results(
         self, module_instance: msfrpc.MsfModule, technical_detail: str
