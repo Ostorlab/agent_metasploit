@@ -106,7 +106,7 @@ class MetasploitAgent(
         technical_detail += f"Target: {target}\n"
 
         if isinstance(results, dict) and results.get("code") == "vulnerable":
-            technical_detail += f'Message: {results["message"]}'
+            technical_detail += f'Message: \n```{results["message"]}```'
         else:
             console_output = self._client.consoles.console(
                 self._cid

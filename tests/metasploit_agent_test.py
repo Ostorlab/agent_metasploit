@@ -109,9 +109,7 @@ def testExploitCheck_whenVulnerable_returnFindings(
         "Using `exploit` module `unix/misc/distcc_exec`\n"
         "Target: 192.168.1.17\n"
         "Message: \n"
-        "```\n"
-        "[+] 192.168.1.17:3632 - The target is vulnerable.\n"
-        "```"
+        "```The target is vulnerable.```"
     )
 
 
@@ -149,7 +147,9 @@ def testExploitCheck_whenVulnerable_returnConsoleOutput(
         "Using `exploit` module `unix/misc/distcc_exec`\n"
         "Target: 192.168.1.17\n"
         "Message: \n"
+        "```\n"
         "[+] 192.168.1.17:3632 - The target is vulnerable.\n"
+        "```"
     )
 
 
