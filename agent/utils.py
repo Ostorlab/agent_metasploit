@@ -1,7 +1,7 @@
 """Utilities for agent Metasploit"""
 import subprocess
 from urllib import parse as urlparser
-
+from requests import exceptions as requests_exceptions
 from ostorlab.agent.message import message as m
 
 from pymetasploit3 import msfrpc
@@ -26,7 +26,7 @@ SCHEME_TO_PORT = {
     "git": 9418,
 }
 DEFAULT_PORT = 443
-MSFRPCD_PWD = "Ostorlab123!"
+MSFRPCD_PWD = "Ostorlab123"
 
 
 def _get_port(message: m.Message) -> int:
@@ -64,6 +64,9 @@ def initialize_msf_rpc() -> msfrpc.MsfRpcClient:
         - msfrpc client
     """
     command = ["msfrpcd", "-P", MSFRPCD_PWD, "-p", "55555"]
-    subprocess.run(command, check=False, capture_output=False)
-    client = msfrpc.MsfRpcClient(MSFRPCD_PWD, ssl=True, port=55555)
-    return client
+    with subprocess.Popen(command):
+        try:
+            client = msfrpc.MsfRpcClient(MSFRPCD_PWD, ssl=True, port=55555)
+        except requests_exceptions.ConnectionError as exc:
+            raise ConnectionError("msfrpcd is not started.") from exc
+        return client

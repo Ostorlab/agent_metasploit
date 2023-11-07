@@ -13,7 +13,7 @@ from ostorlab.utils import defintions as utils_definitions
 from agent import metasploit_agent as msf_agent
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def agent_instance(request: Any) -> msf_agent.MetasploitAgent:
     module = request.param
     with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:
