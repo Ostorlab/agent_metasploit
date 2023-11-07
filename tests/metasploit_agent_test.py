@@ -63,10 +63,12 @@ def testAuxiliaryExecute_whenVulnerable_returnFindings(
         "Using `auxiliary` module `scanner/http/joomla_version`\n"
         "Target: www.google.com\n"
         "Message: \n"
+        "```\n"
         "[*] Server: Apache\n"
         "[+] Joomla version: 1.0\n"
         "[*] Scanned 1 of 1 hosts (100% complete)\n"
         "[*] Auxiliary module execution completed\n"
+        "```"
     )
 
 
@@ -106,7 +108,10 @@ def testExploitCheck_whenVulnerable_returnFindings(
     assert vulnerability_finding["technical_detail"] == (
         "Using `exploit` module `unix/misc/distcc_exec`\n"
         "Target: 192.168.1.17\n"
-        "Message: The target is vulnerable."
+        "Message: \n"
+        "```\n"
+        "[+] 192.168.1.17:3632 - The target is vulnerable.\n"
+        "```"
     )
 
 

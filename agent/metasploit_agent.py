@@ -114,7 +114,7 @@ class MetasploitAgent(
             module_output = console_output.split("WORKSPACE => Ostorlab")[1]
             if "[-]" in module_output:
                 return
-            technical_detail += f"Message: {module_output}"
+            technical_detail += f"Message: \n```{module_output}```"
 
         self._emit_results(module_instance, technical_detail)
 
