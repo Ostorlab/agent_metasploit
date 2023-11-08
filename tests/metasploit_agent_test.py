@@ -1,14 +1,15 @@
 """Unit tests for agent Metasploit."""
 import pytest
 from ostorlab.agent.message import message
-from ostorlab.utils import defintions as utils_definitions
 from pytest_mock import plugin
 
 from agent import metasploit_agent as msf_agent
 
 
 @pytest.mark.parametrize(
-    "agent_instance", ["exploit/windows/http/exchange_proxyshell_rce"], indirect=True
+    "agent_instance",
+    [["exploit/windows/http/exchange_proxyshell_rce", []]],
+    indirect=True,
 )
 def testExploitCheck_whenSafe_returnNone(
     agent_instance: msf_agent.MetasploitAgent,
@@ -22,7 +23,9 @@ def testExploitCheck_whenSafe_returnNone(
 
 
 @pytest.mark.parametrize(
-    "agent_instance", ["auxiliary/scanner/http/exchange_proxylogon"], indirect=True
+    "agent_instance",
+    [["auxiliary/scanner/http/exchange_proxylogon", []]],
+    indirect=True,
 )
 def testAuxiliaryExecute_whenSafe_returnNone(
     agent_instance: msf_agent.MetasploitAgent,
@@ -36,7 +39,7 @@ def testAuxiliaryExecute_whenSafe_returnNone(
 
 
 @pytest.mark.parametrize(
-    "agent_instance", ["auxiliary/scanner/http/joomla_version"], indirect=True
+    "agent_instance", [["auxiliary/scanner/http/joomla_version", []]], indirect=True
 )
 def testAuxiliaryExecute_whenVulnerable_returnFindings(
     agent_instance: msf_agent.MetasploitAgent,
@@ -73,7 +76,7 @@ def testAuxiliaryExecute_whenVulnerable_returnFindings(
 
 
 @pytest.mark.parametrize(
-    "agent_instance", ["exploit/unix/misc/distcc_exec"], indirect=True
+    "agent_instance", [["exploit/unix/misc/distcc_exec", []]], indirect=True
 )
 def testExploitCheck_whenVulnerable_returnFindings(
     agent_instance: msf_agent.MetasploitAgent,
@@ -114,7 +117,7 @@ def testExploitCheck_whenVulnerable_returnFindings(
 
 
 @pytest.mark.parametrize(
-    "agent_instance", ["exploit/unix/misc/distcc_exec"], indirect=True
+    "agent_instance", [["exploit/unix/misc/distcc_exec", []]], indirect=True
 )
 def testExploitCheck_whenVulnerable_returnConsoleOutput(
     agent_instance: msf_agent.MetasploitAgent,
@@ -154,7 +157,9 @@ def testExploitCheck_whenVulnerable_returnConsoleOutput(
 
 
 @pytest.mark.parametrize(
-    "agent_instance", ["auxiliary/scanner/portscan/tcp"], indirect=True
+    "agent_instance",
+    [["auxiliary/scanner/portscan/tcp", '[{"name": "PORTS", "value": "443,80"}]']],
+    indirect=True,
 )
 def testAuxiliaryPortScan_whenResultsFound_returnOpenPorts(
     agent_instance: msf_agent.MetasploitAgent,
@@ -163,14 +168,6 @@ def testAuxiliaryPortScan_whenResultsFound_returnOpenPorts(
     scan_message: message.Message,
 ) -> None:
     """Unit test for agent metasploit auxiliary run, case when results are found"""
-    agent_instance.settings.args = [
-        utils_definitions.Arg(
-            name="options",
-            type="array",
-            value=bytes('[{"name": "PORTS", "value": "443,80"}]', encoding="utf-8"),
-        ),
-    ]
-
     agent_instance.process(scan_message)
 
     assert len(agent_mock) == 1
@@ -182,4 +179,36 @@ def testAuxiliaryPortScan_whenResultsFound_returnOpenPorts(
     assert (
         "[*] Auxiliary module execution completed"
         in vulnerability_finding["technical_detail"]
+    )
+
+
+def testAgent_whenMultipleModulesUsed_returnFindings(
+    agent_multi_instance: msf_agent.MetasploitAgent,
+    mocker: plugin.MockerFixture,
+    agent_mock: list[message.Message],
+    scan_message: message.Message,
+) -> None:
+    """Unit test for agent metasploit auxiliary run, case when results are found"""
+    agent_multi_instance.process(scan_message)
+
+    assert len(agent_mock) == 2
+    assert any("TCP Port Scanner" in finding.data["title"] for finding in agent_mock)
+    assert any(finding.data["risk_rating"] == "HIGH" for finding in agent_mock)
+    assert any(
+        "443 - TCP OPEN" in finding.data["technical_detail"] for finding in agent_mock
+    )
+    assert any(
+        "80 - TCP OPEN" in finding.data["technical_detail"] for finding in agent_mock
+    )
+    assert any(
+        "[*] Auxiliary module execution completed" in finding.data["technical_detail"]
+        for finding in agent_mock
+    )
+    assert any(
+        "Archive.org Stored Domain URLs" in finding.data["title"]
+        for finding in agent_mock
+    )
+    assert (
+        "http://ostorlab.co/robots.txt" in finding.data["technical_detail"]
+        for finding in agent_mock
     )

@@ -93,10 +93,9 @@ out_selectors:
 docker_file_path : Dockerfile
 docker_build_root : .
 args:
-  - name: "module"
-    type: "string"
-    description: "Metasploit module (exploit or auxiliary)."
-  - name: "options"
+  - name: "config"
     type: "array"
-    description: "Metasploit module options (RHOSTS, RPORT...)."
-    value: []
+    description: "Metasploit modules (exploit or auxiliary) with their respective options."
+    value:
+      - module: ""
+        options: []

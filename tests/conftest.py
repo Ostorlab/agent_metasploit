@@ -1,5 +1,4 @@
 """Pytest fixtures for agent Metasploit"""
-import json
 import pathlib
 import random
 from typing import Any
@@ -15,7 +14,8 @@ from agent import metasploit_agent as msf_agent
 
 @pytest.fixture()
 def agent_instance(request: Any) -> msf_agent.MetasploitAgent:
-    module = request.param
+    module = request.param[0]
+    options = request.param[1]
     with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:
         definition = agent_definitions.AgentDefinition.from_yaml(yaml_o)
         settings = runtime_definitions.AgentSettings(
@@ -28,9 +28,40 @@ def agent_instance(request: Any) -> msf_agent.MetasploitAgent:
         )
         settings.args = [
             utils_definitions.Arg(
-                name="module",
-                type="string",
-                value=json.dumps(module).encode(),
+                name="config",
+                type="array",
+                value=bytes(
+                    '[{"module": "%s", "options": %s}]' % (module, options),
+                    encoding="utf-8",
+                ),
+            )
+        ]
+        return msf_agent.MetasploitAgent(definition, settings)
+
+
+@pytest.fixture()
+def agent_multi_instance(request: Any) -> msf_agent.MetasploitAgent:
+    with (pathlib.Path(__file__).parent.parent / "ostorlab.yaml").open() as yaml_o:
+        definition = agent_definitions.AgentDefinition.from_yaml(yaml_o)
+        settings = runtime_definitions.AgentSettings(
+            key="agent/ostorlab/metasploit",
+            bus_url="NA",
+            bus_exchange_topic="NA",
+            args=[],
+            healthcheck_port=random.randint(5000, 6000),
+            redis_url="redis://guest:guest@localhost:6379",
+        )
+        settings.args = [
+            utils_definitions.Arg(
+                name="config",
+                type="array",
+                value=bytes(
+                    '[{"module":"auxiliary/scanner/portscan/tcp",'
+                    '"options":[{"name":"PORTS","value":"80,443"}]}, '
+                    '{"module":"auxiliary/scanner/http/enum_wayback",'
+                    '"options":[{"name":"DOMAIN","value":"www.ostorlab.co"}]}]',
+                    encoding="utf-8",
+                ),
             )
         ]
         return msf_agent.MetasploitAgent(definition, settings)

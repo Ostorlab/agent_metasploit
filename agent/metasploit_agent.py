@@ -4,7 +4,6 @@ import socket
 import time
 from typing import Any
 
-import timeout_decorator
 from ostorlab.agent import agent, definitions as agent_definitions
 from ostorlab.agent.kb import kb
 from ostorlab.agent.message import message as m
@@ -25,7 +24,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-MODULE_TIMEOUT = 180
+MODULE_TIMEOUT = 300
 
 
 class Error(Exception):
@@ -55,15 +54,9 @@ class MetasploitAgent(
         persist_mixin.AgentPersistMixin.__init__(self, agent_settings)
         self._client = utils.initialize_msf_rpc()
         self._cid = self._client.consoles.console().cid
-        module = self.args.get("module")
-        if module is None:
-            raise ValueError("Metasploit module must be specified.")
-        try:
-            module_type, module_name = module.split("/", 1)
-            self.selected_module = self._client.modules.use(module_type, module_name)
-        except msfrpc.MsfRpcError as exc:
-            raise ModuleError("Specified module does not exist") from exc
-        logger.info("Selected metasploit module: %s", self.selected_module.modulename)
+        self.config = self.args.get("config")
+        if self.config is None:
+            raise ValueError("Metasploit module(s) must be specified.")
 
     def process(self, message: m.Message) -> None:
         """Trigger Agent metasploit and emit findings
@@ -72,44 +65,57 @@ class MetasploitAgent(
             message: A message containing the path and the content of the file to be processed
 
         """
-        vhost, rport = utils.prepare_target(message)
-        module_instance = self._set_module_args(self.selected_module, vhost, rport)
-        if module_instance.moduletype == "exploit":
-            job = module_instance.check_exploit()
-        elif module_instance.moduletype == "auxiliary":
-            job = module_instance.execute()
-        else:
-            raise ValueError(
-                f"{module_instance.moduletype} module type is not implemented"
+        for entry in self.config or []:
+            module = entry.get("module")
+            options = entry.get("options") or []
+            try:
+                module_type, module_name = module.split("/", 1)
+                selected_module = self._client.modules.use(module_type, module_name)
+            except (msfrpc.MsfRpcError, ValueError) as exc:
+                raise ModuleError("Specified module does not exist") from exc
+            logger.info("Selected metasploit module: %s", selected_module.modulename)
+            vhost, rport = utils.prepare_target(message)
+            module_instance = self._set_module_args(
+                selected_module, vhost, rport, options
             )
-        job_uuid = job["uuid"]
-        results = self._get_job_results(job_uuid)
+            if module_instance.moduletype == "exploit":
+                job = module_instance.check_exploit()
+            elif module_instance.moduletype == "auxiliary":
+                job = module_instance.execute()
+            else:
+                raise ValueError(
+                    f"{module_instance.moduletype} module type is not implemented"
+                )
+            job_uuid = job["uuid"]
+            results = self._get_job_results(job_uuid)
 
-        if isinstance(results, dict) and results.get("code") == "safe":
-            return
-
-        target = module_instance.runoptions.get(
-            "VHOST"
-        ) or module_instance.runoptions.get("RHOSTS")
-        technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
-        technical_detail += f"Target: {target}\n"
-
-        if isinstance(results, dict) and results.get("code") == "vulnerable":
-            technical_detail += f'Message: \n```{results["message"]}```'
-        else:
-            console_output = self._client.consoles.console(
-                self._cid
-            ).run_module_with_output(module_instance)
-            module_output = console_output.split("WORKSPACE => Ostorlab")[1]
-            if "[-]" in module_output:
+            if isinstance(results, dict) and results.get("code") == "safe":
                 return
-            technical_detail += f"Message: \n```{module_output}```"
 
-        self._emit_results(module_instance, technical_detail)
+            target = (
+                module_instance.runoptions.get("VHOST")
+                or module_instance.runoptions.get("RHOSTS")
+                or module_instance.runoptions.get("DOMAIN")
+            )
+            technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
+            technical_detail += f"Target: {target}\n"
 
-    @timeout_decorator.timeout(MODULE_TIMEOUT, timeout_exception=ModuleError)  # type: ignore
+            if isinstance(results, dict) and results.get("code") == "vulnerable":
+                technical_detail += f'Message: \n```{results["message"]}```'
+            else:
+                console_output = self._client.consoles.console(
+                    self._cid
+                ).run_module_with_output(module_instance)
+                module_output = console_output.split("WORKSPACE => Ostorlab")[1]
+                if "[-]" in module_output:
+                    return
+                technical_detail += f"Message: \n```{module_output}```"
+
+            self._emit_results(module_instance, technical_detail)
+
     def _get_job_results(self, job_uuid: int) -> dict[str, Any] | list[str] | None:
         results = None
+        init_timestamp = time.time()
         while True:
             job_result = self._client.jobs.info_by_uuid(job_uuid)
             status = job_result["status"]
@@ -118,6 +124,9 @@ class MetasploitAgent(
                 break
             if status == "errored":
                 logger.error("Encountered an unexpected error: %s", job_result["error"])
+                break
+            if time.time() - init_timestamp > MODULE_TIMEOUT:
+                logger.error("Metasploit job %d timed out", job_uuid)
                 break
             time.sleep(10)
 
@@ -138,7 +147,7 @@ class MetasploitAgent(
             description=module_instance.description,
             references=msf_references,
             recommendation=(
-                "- Make sure to install the latest security patches from software vendor "
+                "- Make sure to install the latest security patches from software vendor \n"
                 "- Update to the latest software version"
             ),
             security_issue=True,
@@ -155,21 +164,27 @@ class MetasploitAgent(
         )
 
     def _set_module_args(
-        self, selected_module: msfrpc.MsfModule, vhost: str, rport: int
+        self,
+        selected_module: msfrpc.MsfModule,
+        vhost: str,
+        rport: int,
+        options: list[dict[str, str]],
     ) -> msfrpc.MsfModule:
         rhost = socket.gethostbyname(vhost)
-        if "RHOSTS" not in selected_module.required:
+        if "RHOSTS" in selected_module.required:
+            selected_module["RHOSTS"] = rhost
+        elif "DOMAIN" in selected_module.required:
+            selected_module["DOMAIN"] = rhost
+        else:
             raise ValueError(
                 f"Argument not implemented, accepted args: {str(selected_module.required)}"
             )
-        selected_module["RHOSTS"] = rhost
         if "VHOST" in selected_module.options:
             selected_module["VHOST"] = vhost
         if "RPORT" in selected_module.missing_required:
             selected_module["RPORT"] = rport
 
-        msf_options = self.args.get("options") or []
-        for arg in msf_options:
+        for arg in options:
             arg_name = arg["name"]
             if arg_name in selected_module.options:
                 selected_module[arg_name] = arg["value"]
