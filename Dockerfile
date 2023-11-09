@@ -1,15 +1,15 @@
-FROM python:3.10-alpine as base
-FROM base as builder
-RUN apk add build-base
-RUN mkdir /install
-WORKDIR /install
+FROM kalilinux/kali-rolling:latest
+RUN apt-get update && apt-get install -y python3.11 \
+                                         python3-pip \
+                                         metasploit-framework \
+                                         procps
 COPY requirement.txt /requirement.txt
-RUN pip install --prefix=/install -r /requirement.txt
-FROM base
-COPY --from=builder /install /usr/local
+RUN python3 -m pip install -r /requirement.txt
+COPY tools /tools
+RUN pip install -e /tools/pymetasploit3
 RUN mkdir -p /app/agent
 ENV PYTHONPATH=/app
 COPY agent /app/agent
 COPY ostorlab.yaml /app/agent/ostorlab.yaml
 WORKDIR /app
-CMD ["python3", "/app/agent/template_agent.py"]
+CMD ["python3", "/app/agent/metasploit_agent.py"]
