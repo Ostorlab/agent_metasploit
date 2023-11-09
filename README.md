@@ -85,23 +85,24 @@ Example `agent_group.yaml` file to trigger the scan:
 
 ```yaml
 kind: AgentGroup
-description: | 
-  Agent group definition for Metasploit agent.
-  Payload: auxiliary/scanner/portscan/tcp
+description: Metasploit.
 agents:
   - key: agent//metasploit
     args:
-      - name: module
-        type: string
-        value: 'auxiliary/scanner/portscan/tcp'
-      - name: options
+      - name: config
         type: array
-        value:
-          - name: "PORTS"
-            value: "80, 443"
+        value: 
+          - module: 'auxiliary/scanner/portscan/tcp'
+            options:
+              - name: "PORTS"
+                value: "80,443"
+          - module: 'auxiliary/scanner/http/enum_wayback'
+            options:
+              - name: "DOMAIN"
+                value: "www.ostorlab.co"
 ```
 
-`ostorlab scan run -g agent_group.yaml domain-name www.google.com`
+`ostorlab scan run -g agent_group.yaml domain-name www.ostorlab.co`
 
 ## License
 [Apache](./LICENSE)
