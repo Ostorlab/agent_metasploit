@@ -2,18 +2,12 @@
 
 <p align="center">
 <img src="https://img.shields.io/badge/License-Apache_2.0-brightgreen.svg">
-<img src="https://img.shields.io/github/languages/top/ostorlab/agent_metasploit">
-<img src="https://img.shields.io/github/stars/ostorlab/agent_metasploit">
 <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg">
 </p>
 
 _Metasploit is a powerful penetration testing framework._
 
 ---
-
-<p align="center">
-<img src="https://github.com/Ostorlab/agent_metasploit/blob/main/images/logo.png" alt="agent-metasploit" />
-</p>
 
 This repository is an implementation of [Ostorlab Agent](https://pypi.org/project/ostorlab/) for the [Metasploit Framework](https://github.com/rapid7/metasploit-framework) by Rapid7.
 
