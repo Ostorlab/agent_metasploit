@@ -8,6 +8,7 @@ from requests import exceptions as requests_exceptions
 
 from pymetasploit3 import msfrpc
 
+DELAY = 60
 SCHEME_TO_PORT = {
     "http": 80,
     "https": 443,
@@ -67,7 +68,7 @@ def initialize_msf_rpc() -> msfrpc.MsfRpcClient:
     """
     command = ["msfrpcd", "-P", MSFRPCD_PWD, "-p", "55555"]
     with subprocess.Popen(command):
-        time.sleep(60)
+        time.sleep(DELAY)
         try:
             client = msfrpc.MsfRpcClient(MSFRPCD_PWD, ssl=True, port=55555)
         except requests_exceptions.ConnectionError as exc:
