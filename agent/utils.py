@@ -1,8 +1,10 @@
 """Utilities for agent Metasploit"""
 import subprocess
+import time
 from urllib import parse as urlparser
-from requests import exceptions as requests_exceptions
+
 from ostorlab.agent.message import message as m
+from requests import exceptions as requests_exceptions
 
 from pymetasploit3 import msfrpc
 
@@ -65,6 +67,7 @@ def initialize_msf_rpc() -> msfrpc.MsfRpcClient:
     """
     command = ["msfrpcd", "-P", MSFRPCD_PWD, "-p", "55555"]
     with subprocess.Popen(command):
+        time.sleep(60)
         try:
             client = msfrpc.MsfRpcClient(MSFRPCD_PWD, ssl=True, port=55555)
         except requests_exceptions.ConnectionError as exc:
