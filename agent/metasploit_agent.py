@@ -90,8 +90,11 @@ class MetasploitAgent(
                 raise ValueError(
                     f"{module_instance.moduletype} module type is not implemented"
                 )
-            job_uuid = job["uuid"]
-            results = self._get_job_results(client, job_uuid)
+            job_uuid = job.get("uuid")
+            if job_uuid is not None:
+                results = self._get_job_results(client, job_uuid)
+            else:
+                results = None
 
             if isinstance(results, dict) and results.get("code") in ["safe", "unknown"]:
                 return
