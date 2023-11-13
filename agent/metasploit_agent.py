@@ -97,7 +97,7 @@ class MetasploitAgent(
                 results = None
 
             if isinstance(results, dict) and results.get("code") in ["safe", "unknown"]:
-                return
+                continue
 
             target = (
                 module_instance.runoptions.get("VHOST")
@@ -117,11 +117,11 @@ class MetasploitAgent(
                     module_output = console_output.split(WORKSPACE_ARG)[1]
                 except IndexError:
                     logger.error("Unexpected console output:\n %s", console_output)
-                    return None
+                    continue
                 if MSF_SAFE_INDICATOR in module_output:
-                    return
+                    continue
                 if MSF_UNKNOWN_INDICATOR in module_output:
-                    return
+                    continue
                 technical_detail += f"Message: \n```{module_output}```"
 
             self._emit_results(module_instance, technical_detail)
