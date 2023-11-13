@@ -212,3 +212,19 @@ def testAgent_whenMultipleModulesUsed_returnFindings(
         "http://ostorlab.co/robots.txt" in finding.data["technical_detail"]
         for finding in agent_mock
     )
+
+
+@pytest.mark.parametrize(
+    "agent_instance",
+    [["exploit/windows/http/ws_ftp_rce_cve_2023_40044", []]],
+    indirect=True,
+)
+def testExploitCheck_whenCannotCheck_returnNone(
+    agent_instance: msf_agent.MetasploitAgent,
+    agent_mock: list[message.Message],
+    scan_message: message.Message,
+) -> None:
+    """Unit test for agent metasploit exploit check, case when target is safe"""
+    agent_instance.process(scan_message)
+
+    assert len(agent_mock) == 0

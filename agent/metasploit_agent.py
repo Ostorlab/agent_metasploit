@@ -52,11 +52,6 @@ class MetasploitAgent(
         agent.Agent.__init__(self, agent_definition, agent_settings)
         vuln_mixin.AgentReportVulnMixin.__init__(self)
         persist_mixin.AgentPersistMixin.__init__(self, agent_settings)
-        self._client = utils.initialize_msf_rpc()
-        self._cid = self._client.consoles.console().cid
-        self.config = self.args.get("config")
-        if self.config is None:
-            raise ValueError("Metasploit module(s) must be specified.")
 
     def process(self, message: m.Message) -> None:
         """Trigger Agent metasploit and emit findings
@@ -65,12 +60,18 @@ class MetasploitAgent(
             message: A message containing the path and the content of the file to be processed
 
         """
-        for entry in self.config or []:
+        utils.check_msfrpcd()
+        client = utils.msfrpc_connect()
+        cid = client.consoles.console().cid
+        config = self.args.get("config")
+        if config is None:
+            raise ValueError("Metasploit module(s) must be specified.")
+        for entry in config or []:
             module = entry.get("module")
             options = entry.get("options") or []
             try:
                 module_type, module_name = module.split("/", 1)
-                selected_module = self._client.modules.use(module_type, module_name)
+                selected_module = client.modules.use(module_type, module_name)
             except (msfrpc.MsfRpcError, ValueError) as exc:
                 raise ModuleError("Specified module does not exist") from exc
             logger.info("Selected metasploit module: %s", selected_module.modulename)
@@ -87,10 +88,11 @@ class MetasploitAgent(
                     f"{module_instance.moduletype} module type is not implemented"
                 )
             job_uuid = job["uuid"]
-            results = self._get_job_results(job_uuid)
+            results = self._get_job_results(client, job_uuid)
 
-            if isinstance(results, dict) and results.get("code") == "safe":
-                return
+            if isinstance(results, dict):
+                if results.get("code") == "safe" or results.get("code") == "unknown":
+                    return
 
             target = (
                 module_instance.runoptions.get("VHOST")
@@ -103,21 +105,26 @@ class MetasploitAgent(
             if isinstance(results, dict) and results.get("code") == "vulnerable":
                 technical_detail += f'Message: \n```{results["message"]}```'
             else:
-                console_output = self._client.consoles.console(
-                    self._cid
-                ).run_module_with_output(module_instance)
+                console_output = client.consoles.console(cid).run_module_with_output(
+                    module_instance
+                )
                 module_output = console_output.split("WORKSPACE => Ostorlab")[1]
                 if "[-]" in module_output:
+                    return
+                if "Cannot reliably check exploitability" in module_output:
                     return
                 technical_detail += f"Message: \n```{module_output}```"
 
             self._emit_results(module_instance, technical_detail)
+            client.logout()
 
-    def _get_job_results(self, job_uuid: int) -> dict[str, Any] | list[str] | None:
+    def _get_job_results(
+        self, client: msfrpc.MsfRpcClient, job_uuid: int
+    ) -> dict[str, Any] | list[str] | None:
         results = None
         init_timestamp = time.time()
         while True:
-            job_result = self._client.jobs.info_by_uuid(job_uuid)
+            job_result = client.jobs.info_by_uuid(job_uuid)
             status = job_result["status"]
             if status == "completed":
                 results = job_result["result"]
