@@ -142,7 +142,7 @@ class MetasploitAgent(
         init_timestamp = time.time()
         while True:
             job_result = client.jobs.info_by_uuid(job_uuid)
-            status = job_result["status"]
+            status = job_result.get("status")
             if status == "completed":
                 results = job_result["result"]
                 break
