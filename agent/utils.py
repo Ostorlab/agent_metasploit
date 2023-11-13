@@ -3,8 +3,8 @@ import subprocess
 from urllib import parse as urlparser
 
 import psutil
-from requests import exceptions as requests_exceptions
 from ostorlab.agent.message import message as m
+from requests import exceptions as requests_exceptions
 
 from pymetasploit3 import msfrpc
 
