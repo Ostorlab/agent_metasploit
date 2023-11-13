@@ -25,6 +25,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 MODULE_TIMEOUT = 300
+WORKSPACE_ARG = "WORKSPACE => Ostorlab"
 
 
 class Error(Exception):
@@ -60,13 +61,13 @@ class MetasploitAgent(
             message: A message containing the path and the content of the file to be processed
 
         """
-        utils.check_msfrpcd()
-        client = utils.msfrpc_connect()
+        utils.start_msfrpcd()
+        client = utils.connect_msfrpc()
         cid = client.consoles.console().cid
-        config = self.args.get("config")
+        config = self.args.get("config", [])
         if config is None:
             raise ValueError("Metasploit module(s) must be specified.")
-        for entry in config or []:
+        for entry in config:
             module = entry.get("module")
             options = entry.get("options") or []
             try:
@@ -90,9 +91,8 @@ class MetasploitAgent(
             job_uuid = job["uuid"]
             results = self._get_job_results(client, job_uuid)
 
-            if isinstance(results, dict):
-                if results.get("code") == "safe" or results.get("code") == "unknown":
-                    return
+            if isinstance(results, dict) and results.get("code") in ["safe", "unknown"]:
+                return
 
             target = (
                 module_instance.runoptions.get("VHOST")
@@ -108,7 +108,11 @@ class MetasploitAgent(
                 console_output = client.consoles.console(cid).run_module_with_output(
                     module_instance
                 )
-                module_output = console_output.split("WORKSPACE => Ostorlab")[1]
+                try:
+                    module_output = console_output.split(WORKSPACE_ARG)[1]
+                except IndexError:
+                    logger.error("Unexpected console output:\n %s", console_output)
+                    return None
                 if "[-]" in module_output:
                     return
                 if "Cannot reliably check exploitability" in module_output:

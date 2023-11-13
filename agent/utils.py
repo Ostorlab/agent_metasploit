@@ -59,7 +59,7 @@ def prepare_target(message: m.Message) -> tuple[str, int]:
         raise NotImplementedError
 
 
-def check_msfrpcd() -> None:
+def start_msfrpcd() -> None:
     """Start msfrpcd
     Args:
 
@@ -74,7 +74,7 @@ def check_msfrpcd() -> None:
         proc.wait(PROCESS_TIMEOUT)
 
 
-def msfrpc_connect() -> msfrpc.MsfRpcClient:
+def connect_msfrpc() -> msfrpc.MsfRpcClient:
     """connect to msfrpcd
     Args:
 
