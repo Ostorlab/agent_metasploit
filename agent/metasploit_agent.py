@@ -125,7 +125,7 @@ class MetasploitAgent(
                 technical_detail += f"Message: \n```{module_output}```"
 
             self._emit_results(module_instance, technical_detail)
-            client.logout()
+        client.logout()
 
     def _get_job_results(
         self, client: msfrpc.MsfRpcClient, job_uuid: int
