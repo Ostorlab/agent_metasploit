@@ -147,7 +147,7 @@ class MetasploitAgent(
                 results = job_result["result"]
                 break
             if status == "errored":
-                logger.error("Encountered an unexpected error: %s", job_result["error"])
+                logger.error("Module error: %s", job_result["error"])
                 break
             if time.time() - init_timestamp > MODULE_TIMEOUT:
                 logger.error("Metasploit job %s timed out", job_uuid)
