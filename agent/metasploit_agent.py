@@ -55,6 +55,9 @@ class MetasploitAgent(
         agent.Agent.__init__(self, agent_definition, agent_settings)
         vuln_mixin.AgentReportVulnMixin.__init__(self)
         persist_mixin.AgentPersistMixin.__init__(self, agent_settings)
+        self.config = self.args.get("config", [])
+        if self.config is None:
+            raise ValueError("Metasploit module(s) must be specified.")
 
     def process(self, message: m.Message) -> None:
         """Trigger Agent metasploit and emit findings
@@ -66,10 +69,7 @@ class MetasploitAgent(
         utils.start_msfrpcd()
         client = utils.connect_msfrpc()
         cid = client.consoles.console().cid
-        config = self.args.get("config", [])
-        if config is None:
-            raise ValueError("Metasploit module(s) must be specified.")
-        for entry in config:
+        for entry in self.config:
             module = entry.get("module")
             options = entry.get("options") or []
             try:
