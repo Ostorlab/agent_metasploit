@@ -139,7 +139,7 @@ class MetasploitAgent(
                 logger.error("Encountered an unexpected error: %s", job_result["error"])
                 break
             if time.time() - init_timestamp > MODULE_TIMEOUT:
-                logger.error("Metasploit job %d timed out", job_uuid)
+                logger.error("Metasploit job %s timed out", job_uuid)
                 break
             time.sleep(10)
 

@@ -12,5 +12,5 @@ ENV PYTHONPATH=/app
 COPY agent /app/agent
 COPY ostorlab.yaml /app/agent/ostorlab.yaml
 WORKDIR /app
-RUN msfrpcd -P ostorlab123 -p 55555
+RUN msfrpcd -P Ostorlab123 -p 55555
 CMD ["python3", "/app/agent/metasploit_agent.py"]
