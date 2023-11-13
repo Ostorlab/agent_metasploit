@@ -75,21 +75,29 @@ class MetasploitAgent(
             try:
                 module_type, module_name = module.split("/", 1)
                 selected_module = client.modules.use(module_type, module_name)
-            except (msfrpc.MsfRpcError, ValueError) as exc:
-                raise ModuleError("Specified module does not exist") from exc
+            except (msfrpc.MsfRpcError, ValueError):
+                logger.error("Specified module %s does not exist", module)
+                continue
             logger.info("Selected metasploit module: %s", selected_module.modulename)
             vhost, rport = utils.prepare_target(message)
-            module_instance = self._set_module_args(
-                selected_module, vhost, rport, options
-            )
+            try:
+                module_instance = self._set_module_args(
+                    selected_module, vhost, rport, options
+                )
+            except ValueError:
+                logger.error(
+                    "Failed to set arguments for %s", selected_module.modulename
+                )
+                continue
             if module_instance.moduletype == "exploit":
                 job = module_instance.check_exploit()
             elif module_instance.moduletype == "auxiliary":
                 job = module_instance.execute()
             else:
-                raise ValueError(
-                    f"{module_instance.moduletype} module type is not implemented"
+                logger.error(
+                    "%s module type is not implemented", module_instance.moduletype
                 )
+                continue
             job_uuid = job.get("uuid")
             if job_uuid is not None:
                 results = self._get_job_results(client, job_uuid)
