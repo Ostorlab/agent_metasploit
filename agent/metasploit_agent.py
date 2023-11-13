@@ -28,6 +28,10 @@ MODULE_TIMEOUT = 300
 WORKSPACE_ARG = "WORKSPACE => Ostorlab"
 MSF_SAFE_INDICATOR = "[-]"
 MSF_UNKNOWN_INDICATOR = "Cannot reliably check exploitability"
+MSF_UNKNOWN_MESSAGE = """
+[*] Scanned 1 of 1 hosts (100% complete)
+[*] Auxiliary module execution completed
+"""
 
 
 class Error(Exception):
@@ -129,6 +133,8 @@ class MetasploitAgent(
                 if MSF_SAFE_INDICATOR in module_output:
                     continue
                 if MSF_UNKNOWN_INDICATOR in module_output:
+                    continue
+                if MSF_UNKNOWN_MESSAGE == module_output:
                     continue
                 technical_detail += f"Message: \n```{module_output}```"
 
