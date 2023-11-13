@@ -26,6 +26,8 @@ logger = logging.getLogger(__name__)
 
 MODULE_TIMEOUT = 300
 WORKSPACE_ARG = "WORKSPACE => Ostorlab"
+MSF_SAFE_INDICATOR = "[-]"
+MSF_UNKNOWN_INDICATOR = "Cannot reliably check exploitability"
 
 
 class Error(Exception):
@@ -113,9 +115,9 @@ class MetasploitAgent(
                 except IndexError:
                     logger.error("Unexpected console output:\n %s", console_output)
                     return None
-                if "[-]" in module_output:
+                if MSF_SAFE_INDICATOR in module_output:
                     return
-                if "Cannot reliably check exploitability" in module_output:
+                if MSF_UNKNOWN_INDICATOR in module_output:
                     return
                 technical_detail += f"Message: \n```{module_output}```"
 
