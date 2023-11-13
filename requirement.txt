@@ -1,5 +1,3 @@
 ostorlab[agent]
 rich
-types-requests
 psutil
-types-psutil
