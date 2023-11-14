@@ -25,6 +25,13 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 MODULE_TIMEOUT = 300
+WORKSPACE_ARG = "WORKSPACE => Ostorlab"
+MSF_SAFE_INDICATOR = "[-]"
+MSF_UNKNOWN_INDICATOR = "Cannot reliably check exploitability"
+MSF_DEFAULT_AUXILIARY_MESSAGE = """
+[*] Scanned 1 of 1 hosts (100% complete)
+[*] Auxiliary module execution completed
+"""
 
 
 class Error(Exception):
@@ -52,10 +59,8 @@ class MetasploitAgent(
         agent.Agent.__init__(self, agent_definition, agent_settings)
         vuln_mixin.AgentReportVulnMixin.__init__(self)
         persist_mixin.AgentPersistMixin.__init__(self, agent_settings)
-        self._client = utils.initialize_msf_rpc()
-        self._cid = self._client.consoles.console().cid
-        self.config = self.args.get("config")
-        if self.config is None:
+        self._config = self.args.get("config", [])
+        if self._config is None:
             raise ValueError("Metasploit module(s) must be specified.")
 
     def process(self, message: m.Message) -> None:
@@ -65,32 +70,45 @@ class MetasploitAgent(
             message: A message containing the path and the content of the file to be processed
 
         """
-        for entry in self.config or []:
+        client = utils.connect_msfrpc()
+        cid = client.consoles.console().cid
+        for entry in self._config:
             module = entry.get("module")
             options = entry.get("options") or []
             try:
                 module_type, module_name = module.split("/", 1)
-                selected_module = self._client.modules.use(module_type, module_name)
-            except (msfrpc.MsfRpcError, ValueError) as exc:
-                raise ModuleError("Specified module does not exist") from exc
+                selected_module = client.modules.use(module_type, module_name)
+            except (msfrpc.MsfRpcError, ValueError):
+                logger.error("Specified module %s does not exist", module)
+                continue
             logger.info("Selected metasploit module: %s", selected_module.modulename)
             vhost, rport = utils.prepare_target(message)
-            module_instance = self._set_module_args(
-                selected_module, vhost, rport, options
-            )
+            try:
+                module_instance = self._set_module_args(
+                    selected_module, vhost, rport, options
+                )
+            except ValueError:
+                logger.error(
+                    "Failed to set arguments for %s", selected_module.modulename
+                )
+                continue
             if module_instance.moduletype == "exploit":
                 job = module_instance.check_exploit()
             elif module_instance.moduletype == "auxiliary":
                 job = module_instance.execute()
             else:
-                raise ValueError(
-                    f"{module_instance.moduletype} module type is not implemented"
+                logger.error(
+                    "%s module type is not implemented", module_instance.moduletype
                 )
-            job_uuid = job["uuid"]
-            results = self._get_job_results(job_uuid)
+                continue
+            job_uuid = job.get("uuid")
+            if job_uuid is not None:
+                results = self._get_job_results(client, job_uuid)
+            else:
+                results = None
 
-            if isinstance(results, dict) and results.get("code") == "safe":
-                return
+            if isinstance(results, dict) and results.get("code") in ["safe", "unknown"]:
+                continue
 
             target = (
                 module_instance.runoptions.get("VHOST")
@@ -103,30 +121,41 @@ class MetasploitAgent(
             if isinstance(results, dict) and results.get("code") == "vulnerable":
                 technical_detail += f'Message: \n```{results["message"]}```'
             else:
-                console_output = self._client.consoles.console(
-                    self._cid
-                ).run_module_with_output(module_instance)
-                module_output = console_output.split("WORKSPACE => Ostorlab")[1]
-                if "[-]" in module_output:
-                    return
+                console_output = client.consoles.console(cid).run_module_with_output(
+                    module_instance
+                )
+                try:
+                    module_output = console_output.split(WORKSPACE_ARG)[1]
+                except IndexError:
+                    logger.error("Unexpected console output:\n %s", console_output)
+                    continue
+                if MSF_SAFE_INDICATOR in module_output:
+                    continue
+                if MSF_UNKNOWN_INDICATOR in module_output:
+                    continue
+                if MSF_DEFAULT_AUXILIARY_MESSAGE == module_output:
+                    continue
                 technical_detail += f"Message: \n```{module_output}```"
 
             self._emit_results(module_instance, technical_detail)
+        client.logout()
 
-    def _get_job_results(self, job_uuid: int) -> dict[str, Any] | list[str] | None:
+    def _get_job_results(
+        self, client: msfrpc.MsfRpcClient, job_uuid: int
+    ) -> dict[str, Any] | list[str] | None:
         results = None
         init_timestamp = time.time()
         while True:
-            job_result = self._client.jobs.info_by_uuid(job_uuid)
-            status = job_result["status"]
+            job_result = client.jobs.info_by_uuid(job_uuid)
+            status = job_result.get("status")
             if status == "completed":
                 results = job_result["result"]
                 break
             if status == "errored":
-                logger.error("Encountered an unexpected error: %s", job_result["error"])
+                logger.error("Module error: %s", job_result["error"])
                 break
             if time.time() - init_timestamp > MODULE_TIMEOUT:
-                logger.error("Metasploit job %d timed out", job_uuid)
+                logger.error("Metasploit job %s timed out", job_uuid)
                 break
             time.sleep(10)
 

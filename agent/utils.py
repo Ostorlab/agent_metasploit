@@ -1,7 +1,7 @@
 """Utilities for agent Metasploit"""
-import subprocess
 from urllib import parse as urlparser
-from requests import exceptions as requests_exceptions
+
+import tenacity
 from ostorlab.agent.message import message as m
 
 from pymetasploit3 import msfrpc
@@ -27,6 +27,7 @@ SCHEME_TO_PORT = {
 }
 DEFAULT_PORT = 443
 MSFRPCD_PWD = "Ostorlab123"
+PROCESS_TIMEOUT = 300
 
 
 def _get_port(message: m.Message) -> int:
@@ -56,17 +57,15 @@ def prepare_target(message: m.Message) -> tuple[str, int]:
         raise NotImplementedError
 
 
-def initialize_msf_rpc() -> msfrpc.MsfRpcClient:
-    """Start msfrpcd and connect to it
-    Args:
-
+@tenacity.retry(
+    stop=tenacity.stop_after_attempt(5),
+    wait=tenacity.wait_fixed(20),
+    retry=tenacity.retry_if_exception_type(),
+)
+def connect_msfrpc() -> msfrpc.MsfRpcClient:
+    """Connect to msfrpcd
     Returns:
         - msfrpc client
     """
-    command = ["msfrpcd", "-P", MSFRPCD_PWD, "-p", "55555"]
-    with subprocess.Popen(command):
-        try:
-            client = msfrpc.MsfRpcClient(MSFRPCD_PWD, ssl=True, port=55555)
-        except requests_exceptions.ConnectionError as exc:
-            raise ConnectionError("msfrpcd is not started.") from exc
-        return client
+    client = msfrpc.MsfRpcClient(MSFRPCD_PWD, ssl=True, port=55555)
+    return client

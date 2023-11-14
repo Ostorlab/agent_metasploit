@@ -2,5 +2,8 @@ pylint
 pytest
 black
 mypy
-typing-extensions
 pytest_mock
+# Typing requirements.
+types-requests
+types-psutil
+typing-extensions
