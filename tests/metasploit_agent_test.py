@@ -163,7 +163,6 @@ def testExploitCheck_whenVulnerable_returnConsoleOutput(
 )
 def testAuxiliaryPortScan_whenResultsFound_returnOpenPorts(
     agent_instance: msf_agent.MetasploitAgent,
-    mocker: plugin.MockerFixture,
     agent_mock: list[message.Message],
     scan_message: message.Message,
 ) -> None:
