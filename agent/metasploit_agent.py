@@ -70,7 +70,6 @@ class MetasploitAgent(
             message: A message containing the path and the content of the file to be processed
 
         """
-        utils.start_msfrpcd()
         client = utils.connect_msfrpc()
         cid = client.consoles.console().cid
         for entry in self._config:
