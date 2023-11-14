@@ -60,12 +60,7 @@ def prepare_target(message: m.Message) -> tuple[str, int]:
 
 
 def start_msfrpcd() -> None:
-    """Start msfrpcd
-    Args:
-
-    Returns:
-
-    """
+    """Start msfrpcd"""
     for process in psutil.process_iter(["cmdline"]):
         if "msfrpcd" in process.cmdline():
             return None

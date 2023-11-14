@@ -224,7 +224,7 @@ def testExploitCheck_whenCannotCheck_returnNone(
     agent_mock: list[message.Message],
     scan_message: message.Message,
 ) -> None:
-    """Unit test for agent metasploit exploit check, case when target is safe"""
+    """Unit test for agent metasploit exploit check, case when cannot check"""
     agent_instance.process(scan_message)
 
     assert len(agent_mock) == 0
@@ -240,7 +240,8 @@ def testExploitCheck_whenDefaultAuxiliaryMessage_returnNone(
     agent_mock: list[message.Message],
     scan_message: message.Message,
 ) -> None:
-    """Unit test for agent metasploit exploit check, case when target is safe"""
+    """Unit test for agent metasploit exploit check,
+    case when console returns default auxiliary message"""
     agent_instance.process(scan_message)
 
     assert len(agent_mock) == 0
