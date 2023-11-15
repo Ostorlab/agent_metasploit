@@ -118,8 +118,8 @@ class MetasploitAgent(
             if isinstance(results, dict) and results.get("code") == "vulnerable":
                 technical_detail += f'Message: \n```{results["message"]}```'
             elif isinstance(results, list):
-                results = "\n".join(results)
-                technical_detail += f"Message: \n```\n{results}\n```"
+                parsed_results = "\n".join(results)
+                technical_detail += f"Message: \n```\n{parsed_results}\n```"
             else:
                 console_output = client.consoles.console(cid).run_module_with_output(
                     module_instance
