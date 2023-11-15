@@ -244,3 +244,20 @@ def testExploitCheck_whenDefaultAuxiliaryMessage_returnNone(
     agent_instance.process(scan_message)
 
     assert len(agent_mock) == 0
+
+
+@pytest.mark.parametrize(
+    "agent_instance",
+    [["auxiliary/scanner/ssl/openssl_heartbleed", []]],
+    indirect=True,
+)
+def testAuxiliaryRun_whenSafe_returnNone(
+    agent_instance: msf_agent.MetasploitAgent,
+    agent_mock: list[message.Message],
+    scan_message: message.Message,
+) -> None:
+    """Unit test for agent metasploit exploit check,
+    case when console returns default auxiliary message"""
+    agent_instance.process(scan_message)
+
+    assert len(agent_mock) == 0
