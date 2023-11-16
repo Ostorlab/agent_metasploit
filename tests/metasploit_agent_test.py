@@ -11,7 +11,7 @@ from agent import metasploit_agent as msf_agent
     [["exploit/windows/http/exchange_proxyshell_rce", []]],
     indirect=True,
 )
-def testExploitCheck_whenSafe_returnNone(
+def testExploit_whenSafe_returnNone(
     agent_instance: msf_agent.MetasploitAgent,
     agent_mock: list[message.Message],
     scan_message: message.Message,
@@ -41,7 +41,7 @@ def testAuxiliaryExecute_whenSafe_returnNone(
 @pytest.mark.parametrize(
     "agent_instance", [["exploit/unix/misc/distcc_exec", []]], indirect=True
 )
-def testExploitCheck_whenVulnerable_returnFindings(
+def testExploit_whenVulnerable_returnFindings(
     agent_instance: msf_agent.MetasploitAgent,
     mocker: plugin.MockerFixture,
     agent_mock: list[message.Message],
@@ -84,7 +84,7 @@ def testExploitCheck_whenVulnerable_returnFindings(
     [["exploit/windows/http/ws_ftp_rce_cve_2023_40044", []]],
     indirect=True,
 )
-def testExploitCheck_whenCannotCheck_returnNone(
+def testExploit_whenCannotCheck_returnNone(
     agent_instance: msf_agent.MetasploitAgent,
     agent_mock: list[message.Message],
     scan_message: message.Message,
@@ -100,7 +100,7 @@ def testExploitCheck_whenCannotCheck_returnNone(
     [["auxiliary/scanner/ike/cisco_ike_benigncertain", []]],
     indirect=True,
 )
-def testExploitCheck_whenDefaultAuxiliaryMessage_returnNone(
+def testExploit_whenDefaultAuxiliaryMessage_returnNone(
     agent_instance: msf_agent.MetasploitAgent,
     agent_mock: list[message.Message],
     scan_message: message.Message,
@@ -117,7 +117,7 @@ def testExploitCheck_whenDefaultAuxiliaryMessage_returnNone(
     [["auxiliary/scanner/ssl/openssl_heartbleed", []]],
     indirect=True,
 )
-def testAuxiliaryRun_whenSafe_returnNone(
+def testAuxiliary_whenSafe_returnNone(
     agent_instance: msf_agent.MetasploitAgent,
     agent_mock: list[message.Message],
     scan_message: message.Message,
@@ -127,3 +127,50 @@ def testAuxiliaryRun_whenSafe_returnNone(
     agent_instance.process(scan_message)
 
     assert len(agent_mock) == 0
+
+
+@pytest.mark.parametrize(
+    "agent_instance",
+    [["auxiliary/scanner/ssl/openssl_heartbleed", []]],
+    indirect=True,
+)
+def testAuxiliary_whenAppearsVulnerable_returnFindings(
+    agent_instance: msf_agent.MetasploitAgent,
+    agent_mock: list[message.Message],
+    scan_message: message.Message,
+    mocker: plugin.MockerFixture,
+) -> None:
+    """Unit test for agent metasploit auxiliary check,
+    case when console returns default auxiliary message"""
+    mocker.patch(
+        "pymetasploit3.msfrpc.MsfModule.check_exploit",
+        return_value={"job_id": 10, "uuid": "CzwatViyCW2tJABg0FiYfHeC"},
+    )
+    mocker.patch(
+        "pymetasploit3.msfrpc.JobManager.info_by_uuid",
+        return_value={
+            "status": "completed",
+            "result": {
+                "code": "appears",
+                "message": "The target appears to be vulnerable.",
+                "reason": None,
+                "details": {},
+            },
+        },
+    )
+
+    agent_instance.process(scan_message)
+
+    assert len(agent_mock) == 1
+    vulnerability_finding = agent_mock[0].data
+    assert (
+        vulnerability_finding["title"]
+        == "OpenSSL Heartbeat (Heartbleed) Information Leak"
+    )
+    assert vulnerability_finding["risk_rating"] == "HIGH"
+    assert vulnerability_finding["technical_detail"] == (
+        "Using `auxiliary` module `scanner/ssl/openssl_heartbleed`\n"
+        "Target: 142.250.184.4\n"
+        "Message: \n"
+        "```The target appears to be vulnerable.```"
+    )

@@ -88,20 +88,18 @@ class MetasploitAgent(
                     "Failed to set arguments for %s", selected_module.modulename
                 )
                 continue
-            if module_instance.moduletype == "exploit":
-                job = module_instance.check_exploit()
-            elif module_instance.moduletype == "auxiliary":
-                job = module_instance.execute()
-            else:
+            job = module_instance.check_exploit()
+            if job.get("error") is True:
                 logger.error(
-                    "%s module type is not implemented", module_instance.moduletype
+                    "Metasploit Error: %s", job.get("error_string", "Unknown Error")
                 )
                 continue
+
             job_uuid = job.get("uuid")
-            if job_uuid is not None:
-                results = self._get_job_results(client, job_uuid)
-            else:
-                results = None
+            if job_uuid is None:
+                continue
+
+            results = self._get_job_results(client, job_uuid)
 
             if isinstance(results, dict) and results.get("code") in ["safe", "unknown"]:
                 continue
@@ -114,7 +112,10 @@ class MetasploitAgent(
             technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
             technical_detail += f"Target: {target}\n"
 
-            if isinstance(results, dict) and results.get("code") == "vulnerable":
+            if isinstance(results, dict) and results.get("code") in [
+                "vulnerable",
+                "appears",
+            ]:
                 technical_detail += f'Message: \n```{results["message"]}```'
             elif isinstance(results, list):
                 parsed_results = "\n".join(results)
