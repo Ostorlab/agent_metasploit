@@ -97,7 +97,7 @@ class MetasploitAgent(
 
             results = self._get_job_results(client, job_uuid)
 
-            if isinstance(results, dict) is True and results.get("code") in [
+            if isinstance(results, dict) and results.get("code") in [
                 "safe",
                 "unknown",
             ]:
@@ -116,7 +116,7 @@ class MetasploitAgent(
                 "appears",
             ]:
                 technical_detail += f'Message: \n```{results["message"]}```'
-            elif isinstance(results, list) is True:
+            elif isinstance(results, list):
                 parsed_results = "\n".join(results)
                 technical_detail += f"Message: \n```\n{parsed_results}\n```"
             else:
@@ -152,7 +152,7 @@ class MetasploitAgent(
         entry_title = module_instance.name or "Metasploit generic vulnerability entry"
         msf_references = {}
         for reference in module_instance.references:
-            if isinstance(reference, list) is True and len(reference) == 2:
+            if isinstance(reference, list) and len(reference) == 2:
                 msf_references[reference[0]] = reference[1]
         entry = kb.Entry(
             title=entry_title,
