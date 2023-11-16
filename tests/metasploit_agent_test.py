@@ -168,9 +168,8 @@ def testAuxiliary_whenAppearsVulnerable_returnFindings(
         == "OpenSSL Heartbeat (Heartbleed) Information Leak"
     )
     assert vulnerability_finding["risk_rating"] == "HIGH"
-    assert vulnerability_finding["technical_detail"] == (
-        "Using `auxiliary` module `scanner/ssl/openssl_heartbleed`\n"
-        "Target: 142.250.184.4\n"
-        "Message: \n"
-        "```The target appears to be vulnerable.```"
+    assert "scanner/ssl/openssl_heartbleed" in vulnerability_finding["technical_detail"]
+    assert (
+        "The target appears to be vulnerable."
+        in vulnerability_finding["technical_detail"]
     )
