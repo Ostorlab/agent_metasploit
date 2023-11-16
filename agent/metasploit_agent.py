@@ -121,21 +121,7 @@ class MetasploitAgent(
                 parsed_results = "\n".join(results)
                 technical_detail += f"Message: \n```\n{parsed_results}\n```"
             else:
-                console_output = client.consoles.console(cid).run_module_with_output(
-                    module_instance
-                )
-                try:
-                    module_output = console_output.split(WORKSPACE_ARG)[1]
-                except IndexError:
-                    logger.error("Unexpected console output:\n %s", console_output)
-                    continue
-                if MSF_NEGATIVE_INDICATOR in module_output:
-                    continue
-                if MSF_UNKNOWN_INDICATOR in module_output:
-                    continue
-                if MSF_POSITIVE_INDICATOR not in module_output:
-                    continue
-                technical_detail += f"Message: \n```{module_output}```"
+                return
 
             self._emit_results(module_instance, technical_detail)
         client.logout()
