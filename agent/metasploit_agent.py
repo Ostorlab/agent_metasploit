@@ -98,28 +98,20 @@ class MetasploitAgent(
             results = self._get_job_results(client, job_uuid)
 
             if isinstance(results, dict) and results.get("code") in [
-                "safe",
-                "unknown",
-            ]:
-                continue
-
-            target = (
-                module_instance.runoptions.get("VHOST")
-                or module_instance.runoptions.get("RHOSTS")
-                or module_instance.runoptions.get("DOMAIN")
-            )
-            technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
-            technical_detail += f"Target: {target}\n"
-
-            if isinstance(results, dict) and results.get("code") in [
                 "vulnerable",
                 "appears",
             ]:
+                target = (
+                    module_instance.runoptions.get("VHOST")
+                    or module_instance.runoptions.get("RHOSTS")
+                    or module_instance.runoptions.get("DOMAIN")
+                )
+                technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
+                technical_detail += f"Target: {target}\n"
                 technical_detail += f'Message: \n```{results["message"]}```'
-            else:
-                return
 
-            self._emit_results(module_instance, technical_detail)
+                self._emit_results(module_instance, technical_detail)
+
         client.logout()
 
     def _get_job_results(
