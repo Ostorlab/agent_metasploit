@@ -116,9 +116,6 @@ class MetasploitAgent(
                 "appears",
             ]:
                 technical_detail += f'Message: \n```{results["message"]}```'
-            elif isinstance(results, list):
-                parsed_results = "\n".join(results)
-                technical_detail += f"Message: \n```\n{parsed_results}\n```"
             else:
                 return
 
