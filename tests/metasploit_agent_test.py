@@ -259,7 +259,7 @@ def testExploitCheck_whenDefaultAuxiliaryMessage_returnNone(
     [["exploit/windows/http/exchange_proxyshell_rce", []]],
     indirect=True,
 )
-def testAgentNuclei_whenSameMessageSentTwice_shouldScanOnlyOnce(
+def testMetasploitAgent_whenSameMessageSentTwice_shouldScanOnlyOnce(
     agent_instance: msf_agent.MetasploitAgent,
     agent_mock: list[message.Message],
     agent_persist_mock: dict[str | bytes, str | bytes],
