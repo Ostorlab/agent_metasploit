@@ -245,6 +245,7 @@ def testExploitCheck_whenCannotCheck_returnNone(
 def testExploitCheck_whenDefaultAuxiliaryMessage_returnNone(
     agent_instance: msf_agent.MetasploitAgent,
     agent_mock: list[message.Message],
+    agent_persist_mock: dict[str | bytes, str | bytes],
     scan_message: message.Message,
 ) -> None:
     """Unit test for agent metasploit exploit check,
