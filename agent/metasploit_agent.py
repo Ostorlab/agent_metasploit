@@ -68,7 +68,6 @@ class MetasploitAgent(
 
         """
         client = utils.connect_msfrpc()
-        cid = client.consoles.console().cid
         for entry in self._config:
             module = entry.get("module")
             options = entry.get("options") or []
