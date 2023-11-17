@@ -115,8 +115,8 @@ def prepare_targets(message: m.Message) -> list[Target]:
         port = _get_port(message, scheme)
         try:
             mask = int(message.data.get("mask"))
-        except ValueError:
-            raise ValueError("Invalid network mask provided")
+        except ValueError as exc:
+            raise ValueError("Invalid network mask provided") from exc
         if mask is None:
             hosts = ipaddress.ip_network(host)
         else:
