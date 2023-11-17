@@ -14,6 +14,7 @@ from agent import metasploit_agent as msf_agent
 def testExploitCheck_whenSafe_returnNone(
     agent_instance: msf_agent.MetasploitAgent,
     agent_mock: list[message.Message],
+    agent_persist_mock: dict[str | bytes, str | bytes],
     scan_message: message.Message,
 ) -> None:
     """Unit test for agent metasploit exploit check, case when target is safe"""
@@ -30,6 +31,7 @@ def testExploitCheck_whenSafe_returnNone(
 def testAuxiliaryExecute_whenSafe_returnNone(
     agent_instance: msf_agent.MetasploitAgent,
     agent_mock: list[message.Message],
+    agent_persist_mock: dict[str | bytes, str | bytes],
     scan_message: message.Message,
 ) -> None:
     """Unit test for agent metasploit auxiliary execute, case when target is safe"""
@@ -45,6 +47,7 @@ def testAuxiliaryExecute_whenVulnerable_returnFindings(
     agent_instance: msf_agent.MetasploitAgent,
     mocker: plugin.MockerFixture,
     agent_mock: list[message.Message],
+    agent_persist_mock: dict[str | bytes, str | bytes],
     scan_message: message.Message,
 ) -> None:
     """Unit test for agent metasploit auxiliary execute, case when target is vulnerable"""
@@ -82,6 +85,7 @@ def testExploitCheck_whenVulnerable_returnFindings(
     agent_instance: msf_agent.MetasploitAgent,
     mocker: plugin.MockerFixture,
     agent_mock: list[message.Message],
+    agent_persist_mock: dict[str | bytes, str | bytes],
     metasploitable_scan_message: message.Message,
 ) -> None:
     """Unit test for agent metasploit exploit check, case when target is vulnerable"""
@@ -123,6 +127,7 @@ def testExploitCheck_whenVulnerable_returnConsoleOutput(
     agent_instance: msf_agent.MetasploitAgent,
     mocker: plugin.MockerFixture,
     agent_mock: list[message.Message],
+    agent_persist_mock: dict[str | bytes, str | bytes],
     metasploitable_scan_message: message.Message,
 ) -> None:
     """Unit test for agent metasploit exploit check, case when target is vulnerable (console output)"""
@@ -164,6 +169,7 @@ def testExploitCheck_whenVulnerable_returnConsoleOutput(
 def testAuxiliaryPortScan_whenResultsFound_returnOpenPorts(
     agent_instance: msf_agent.MetasploitAgent,
     agent_mock: list[message.Message],
+    agent_persist_mock: dict[str | bytes, str | bytes],
     scan_message: message.Message,
 ) -> None:
     """Unit test for agent metasploit auxiliary run, case when results are found"""
@@ -185,6 +191,7 @@ def testAgent_whenMultipleModulesUsed_returnFindings(
     agent_multi_instance: msf_agent.MetasploitAgent,
     mocker: plugin.MockerFixture,
     agent_mock: list[message.Message],
+    agent_persist_mock: dict[str | bytes, str | bytes],
     scan_message: message.Message,
 ) -> None:
     """Unit test for agent metasploit auxiliary run, case when results are found"""
@@ -221,6 +228,7 @@ def testAgent_whenMultipleModulesUsed_returnFindings(
 def testExploitCheck_whenCannotCheck_returnNone(
     agent_instance: msf_agent.MetasploitAgent,
     agent_mock: list[message.Message],
+    agent_persist_mock: dict[str | bytes, str | bytes],
     scan_message: message.Message,
 ) -> None:
     """Unit test for agent metasploit exploit check, case when cannot check"""
@@ -237,6 +245,7 @@ def testExploitCheck_whenCannotCheck_returnNone(
 def testExploitCheck_whenDefaultAuxiliaryMessage_returnNone(
     agent_instance: msf_agent.MetasploitAgent,
     agent_mock: list[message.Message],
+    agent_persist_mock: dict[str | bytes, str | bytes],
     scan_message: message.Message,
 ) -> None:
     """Unit test for agent metasploit exploit check,
@@ -244,3 +253,48 @@ def testExploitCheck_whenDefaultAuxiliaryMessage_returnNone(
     agent_instance.process(scan_message)
 
     assert len(agent_mock) == 0
+
+
+@pytest.mark.parametrize(
+    "agent_instance",
+    [["exploit/windows/http/exchange_proxyshell_rce", []]],
+    indirect=True,
+)
+def testMetasploitAgent_whenSameMessageSentTwice_shouldScanOnlyOnce(
+    agent_instance: msf_agent.MetasploitAgent,
+    agent_mock: list[message.Message],
+    agent_persist_mock: dict[str | bytes, str | bytes],
+    scan_message: message.Message,
+    mocker: plugin.MockerFixture,
+) -> None:
+    """Test MetasploitAgent agent should not scan the same message twice."""
+    connect_msfrpc_mock = mocker.patch("agent.utils.connect_msfrpc")
+
+    agent_instance.process(scan_message)
+    agent_instance.process(scan_message)
+
+    connect_msfrpc_mock.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "agent_instance",
+    [["exploit/windows/http/exchange_proxyshell_rce", []]],
+    indirect=True,
+)
+def testMetasploitAgent_whenUnknownTarget_shouldNotBeProcessed(
+    agent_instance: msf_agent.MetasploitAgent,
+    agent_mock: list[message.Message],
+    agent_persist_mock: dict[str | bytes, str | bytes],
+    scan_message: message.Message,
+    mocker: plugin.MockerFixture,
+) -> None:
+    """Test MetasploitAgent agent should not scan message with unknown target."""
+
+    connect_msfrpc_mock = mocker.patch("agent.utils.connect_msfrpc")
+    msg = message.Message.from_data(
+        "v3.asset.file", data={"path": "libagora-crypto.so"}
+    )
+
+    agent_instance.process(msg)
+
+    connect_msfrpc_mock.assert_not_called()
