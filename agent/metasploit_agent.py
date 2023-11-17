@@ -1,6 +1,7 @@
 """Ostorlab Agent implementation for metasploit"""
 import logging
 import socket
+import ipaddress
 import time
 from typing import Any
 
@@ -63,6 +64,11 @@ class MetasploitAgent(
             message: A message containing the path and the content of the file to be processed
 
         """
+
+        logger.info("processing message of selector : %s", message.selector)
+        if self._is_target_already_processed(message) is True:
+            return
+
         client = utils.connect_msfrpc()
         for entry in self._config:
             module = entry.get("module")
@@ -113,6 +119,49 @@ class MetasploitAgent(
                 self._emit_results(module_instance, technical_detail)
 
         client.logout()
+
+        self._mark_target_as_processed(message)
+        logger.info("Done processing message of selector : %s", message.selector)
+
+    def _is_target_already_processed(self, message: m.Message) -> bool:
+        """Checks if the target has already been processed before, relies on the redis server."""
+        if message.data.get("url") is not None or message.data.get("name") is not None:
+            unicity_check_key = utils.get_unique_check_key(message)
+            if unicity_check_key is None:
+                return True
+            return self.set_is_member(key=METASPLOIT_AGENT_KEY, value=unicity_check_key)
+
+        if message.data.get("host") is not None:
+            host = str(message.data.get("host"))
+            mask = message.data.get("mask")
+            if mask is not None:
+                addresses = ipaddress.ip_network(f"{host}/{mask}", strict=False)
+                return self.ip_network_exists(
+                    key=METASPLOIT_AGENT_KEY, ip_range=addresses
+                )
+            return self.set_is_member(key=METASPLOIT_AGENT_KEY, value=host)
+        logger.error("Unknown target %s", message)
+        return True
+
+    def _mark_target_as_processed(self, message: m.Message) -> None:
+        """Mark the target as processed, relies on the redis server."""
+        if message.data.get("url") is not None or message.data.get("name") is not None:
+            unicity_check_key = utils.get_unique_check_key(message)
+            if unicity_check_key is None:
+                return
+
+            self.set_add(METASPLOIT_AGENT_KEY, unicity_check_key)
+        elif message.data.get("host") is not None:
+            host = str(message.data.get("host"))
+            mask = message.data.get("mask")
+            if mask is not None:
+                addresses = ipaddress.ip_network(f"{host}/{mask}", strict=False)
+                self.add_ip_network(key=METASPLOIT_AGENT_KEY, ip_range=addresses)
+            else:
+                self.set_add(METASPLOIT_AGENT_KEY, host)
+        else:
+            logger.error("Unknown target %s", message)
+            return
 
     def _get_job_results(
         self, client: msfrpc.MsfRpcClient, job_uuid: int
