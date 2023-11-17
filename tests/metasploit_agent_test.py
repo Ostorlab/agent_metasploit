@@ -76,7 +76,7 @@ def testExploit_whenVulnerable_returnFindings(
     assert vulnerability_finding["risk_rating"] == "HIGH"
     assert vulnerability_finding["technical_detail"] == (
         "Using `exploit` module `unix/misc/distcc_exec`\n"
-        "Target: 192.168.1.17\n"
+        "Target: 192.168.1.17:443\n"
         "Message: \n"
         "```The target is vulnerable.```"
     )

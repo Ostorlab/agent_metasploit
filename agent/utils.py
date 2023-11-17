@@ -1,5 +1,6 @@
 """Utilities for agent Metasploit"""
 import dataclasses
+import ipaddress
 from typing import cast
 from urllib import parse as urlparser
 
@@ -40,12 +41,11 @@ class Target:
     port: int
 
 
-def _get_port(message: m.Message) -> int:
+def _get_port(message: m.Message, scheme: str) -> int:
     """Returns the port to be used for the target."""
-    if message.data.get("port") is not None:
-        return int(message.data["port"])
-    else:
-        return DEFAULT_PORT
+    if message.data.get("port") is None:
+        return SCHEME_TO_PORT.get(scheme) or DEFAULT_PORT
+    return int(message.data["port"])
 
 
 def _get_scheme(message: m.Message) -> str:
@@ -77,8 +77,8 @@ def get_unique_check_key(message: m.Message) -> str | None:
         if target is not None:
             return f"{target.scheme}_{target.host}_{target.port}"
     elif message.data.get("name") is not None:
-        port = _get_port(message)
         schema = _get_scheme(message)
+        port = _get_port(message, schema)
         domain = message.data["name"]
         return f"{schema}_{domain}_{port}"
     return None
@@ -101,27 +101,34 @@ def _get_target_from_url(message: m.Message) -> Target | None:
             and parsed_url.netloc.split(":")[-1] != ""
         ):
             port = int(parsed_url.netloc.split(":")[-1])
-    args_port = _get_port(message)
+    args_port = _get_port(message, schema)
     port = port or SCHEME_TO_PORT.get(schema) or args_port
     target = Target(host=domain_name, scheme=schema, port=port)
     return target
 
 
-def prepare_target(message: m.Message) -> tuple[str, int]:
+def prepare_targets(message: m.Message) -> list[Target]:
     """Prepare targets based on type, if a domain name is provided, port and protocol are collected
     from the config."""
     if (host := message.data.get("host")) is not None:
-        port = _get_port(message)
-        return host, port
+        scheme = _get_scheme(message)
+        port = _get_port(message, scheme)
+        mask = message.data.get("mask")
+        if mask is None:
+            hosts = ipaddress.ip_network(host)
+        else:
+            hosts = ipaddress.ip_network(f"{host}/{mask}", strict=False)
+        return [Target(host=str(h), port=port, scheme=scheme) for h in hosts]
     elif (host := message.data.get("name")) is not None:
-        port = _get_port(message)
-        return host, port
+        scheme = _get_scheme(message)
+        port = _get_port(message, scheme)
+        return [Target(host=host, port=port, scheme=scheme)]
     elif (url := message.data.get("url")) is not None:
         parsed_url = urlparser.urlparse(url)
         host = parsed_url.netloc
         scheme = parsed_url.scheme
-        port = SCHEME_TO_PORT.get(scheme) or DEFAULT_PORT
-        return host, port
+        port = _get_port(message, scheme)
+        return [Target(host=host, port=port, scheme=scheme)]
     else:
         raise NotImplementedError
 

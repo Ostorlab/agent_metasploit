@@ -26,6 +26,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 MODULE_TIMEOUT = 300
+METASPLOIT_AGENT_KEY = b"agent_metasploit_asset"
 
 
 class Error(Exception):
@@ -51,8 +52,8 @@ class MetasploitAgent(
         agent_settings: runtime_definitions.AgentSettings,
     ) -> None:
         agent.Agent.__init__(self, agent_definition, agent_settings)
-        vuln_mixin.AgentReportVulnMixin.__init__(self)
         persist_mixin.AgentPersistMixin.__init__(self, agent_settings)
+        vuln_mixin.AgentReportVulnMixin.__init__(self)
         self._config = self.args.get("config", [])
         if self._config is None:
             raise ValueError("Metasploit module(s) must be specified.")
@@ -80,43 +81,42 @@ class MetasploitAgent(
                 logger.error("Specified module %s does not exist", module)
                 continue
             logger.info("Selected metasploit module: %s", selected_module.modulename)
-            vhost, rport = utils.prepare_target(message)
-            try:
-                module_instance = self._set_module_args(
-                    selected_module, vhost, rport, options
-                )
-            except ValueError:
-                logger.error(
-                    "Failed to set arguments for %s", selected_module.modulename
-                )
-                continue
-            job = module_instance.check_exploit()
-            if job.get("error") is True:
-                logger.error(
-                    "Metasploit Error: %s", job.get("error_string", "Unknown Error")
-                )
-                continue
+            targets = utils.prepare_targets(message)
+            for target in targets:
+                rhost = target.host
+                rport = target.port
+                is_ssl = target.scheme == "https"
+                try:
+                    module_instance = self._set_module_args(
+                        selected_module, rhost, rport, is_ssl, options
+                    )
+                except ValueError:
+                    logger.error(
+                        "Failed to set arguments for %s", selected_module.modulename
+                    )
+                    continue
+                job = module_instance.check_exploit()
+                if job.get("error") is True:
+                    logger.error(
+                        "Metasploit Error: %s", job.get("error_string", "Unknown Error")
+                    )
+                    continue
 
-            job_uuid = job.get("uuid")
-            if job_uuid is None:
-                continue
+                job_uuid = job.get("uuid")
+                if job_uuid is None:
+                    continue
 
-            results = self._get_job_results(client, job_uuid)
+                results = self._get_job_results(client, job_uuid)
 
-            if isinstance(results, dict) and results.get("code") in [
-                "vulnerable",
-                "appears",
-            ]:
-                target = (
-                    module_instance.runoptions.get("VHOST")
-                    or module_instance.runoptions.get("RHOSTS")
-                    or module_instance.runoptions.get("DOMAIN")
-                )
-                technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
-                technical_detail += f"Target: {target}\n"
-                technical_detail += f'Message: \n```{results["message"]}```'
+                if isinstance(results, dict) and results.get("code") in [
+                    "vulnerable",
+                    "appears",
+                ]:
+                    technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
+                    technical_detail += f"Target: {rhost}:{rport}\n"
+                    technical_detail += f'Message: \n```{results["message"]}```'
 
-                self._emit_results(module_instance, technical_detail)
+                    self._emit_results(module_instance, technical_detail)
 
         client.logout()
 
@@ -220,9 +220,13 @@ class MetasploitAgent(
         selected_module: msfrpc.MsfModule,
         vhost: str,
         rport: int,
+        is_ssl: bool,
         options: list[dict[str, str]],
     ) -> msfrpc.MsfModule:
-        rhost = socket.gethostbyname(vhost)
+        try:
+            rhost = socket.gethostbyname(vhost)
+        except socket.gaierror as exc:
+            raise ValueError("The specified target is not valid") from exc
         if "RHOSTS" in selected_module.required:
             selected_module["RHOSTS"] = rhost
         elif "DOMAIN" in selected_module.required:
@@ -235,7 +239,8 @@ class MetasploitAgent(
             selected_module["VHOST"] = vhost
         if "RPORT" in selected_module.missing_required:
             selected_module["RPORT"] = rport
-
+        if "SSL" in selected_module.options:
+            selected_module["SSL"] = is_ssl
         for arg in options:
             arg_name = arg["name"]
             if arg_name in selected_module.options:
