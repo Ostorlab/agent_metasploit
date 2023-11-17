@@ -114,7 +114,7 @@ def prepare_targets(message: m.Message) -> list[Target]:
         scheme = _get_scheme(message)
         port = _get_port(message, scheme)
         try:
-            mask = int(message.data.get("mask"))
+            mask = int(message.data.get("mask", None))
         except ValueError as exc:
             raise ValueError("Invalid network mask provided") from exc
         if mask is None:
