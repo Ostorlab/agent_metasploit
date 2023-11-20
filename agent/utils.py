@@ -113,17 +113,13 @@ def prepare_targets(message: m.Message) -> list[Target]:
     if (host := message.data.get("host")) is not None:
         scheme = _get_scheme(message)
         port = _get_port(message, scheme)
-        try:
-            mask = int(message.data.get("mask", None))
-        except ValueError as exc:
-            raise ValueError("Invalid network mask provided") from exc
+        mask = message.data.get("mask", None)
         if mask is None:
             hosts = ipaddress.ip_network(host)
         else:
-            mask = int(mask)
-            if message.data.get("version") == 4 and mask < 24:
+            if message.data.get("version") == 4 and int(mask) < 24:
                 raise ValueError("Subnet mask below 24 is not supported.")
-            if message.data.get("version") == 6 and mask < 120:
+            if message.data.get("version") == 6 and int(mask) < 120:
                 raise ValueError("Subnet mask below 120 is not supported")
             hosts = ipaddress.ip_network(f"{host}/{mask}", strict=False)
         return [Target(host=str(h), port=port, scheme=scheme) for h in hosts]
