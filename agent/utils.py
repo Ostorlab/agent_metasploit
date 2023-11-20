@@ -35,6 +35,7 @@ DEFAULT_SCHEME = "https"
 IPv4_CIDR_LIMIT = 24
 IPv6_CIDR_LIMIT = 120
 
+
 @dataclasses.dataclass
 class Target:
     host: str
