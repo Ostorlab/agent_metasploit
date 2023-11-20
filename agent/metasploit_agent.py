@@ -26,6 +26,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 MODULE_TIMEOUT = 300
+VULNERABLE_STATUSES = ["vulnerable", "appears"]
 METASPLOIT_AGENT_KEY = b"agent_metasploit_asset"
 
 
@@ -108,10 +109,10 @@ class MetasploitAgent(
 
                 results = self._get_job_results(client, job_uuid)
 
-                if isinstance(results, dict) and results.get("code") in [
-                    "vulnerable",
-                    "appears",
-                ]:
+                if (
+                    isinstance(results, dict)
+                    and results.get("code") in VULNERABLE_STATUSES
+                ):
                     technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
                     technical_detail += f"Target: {rhost}:{rport}\n"
                     technical_detail += f'Message: \n```{results["message"]}```'
