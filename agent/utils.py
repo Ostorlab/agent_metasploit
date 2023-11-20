@@ -32,7 +32,8 @@ DEFAULT_PORT = 443
 MSFRPCD_PWD = "Ostorlab123"
 PROCESS_TIMEOUT = 300
 DEFAULT_SCHEME = "https"
-
+IPv4_CIDR_LIMIT = 24
+IPv6_CIDR_LIMIT = 120
 
 @dataclasses.dataclass
 class Target:
@@ -117,9 +118,9 @@ def prepare_targets(message: m.Message) -> list[Target]:
         if mask is None:
             hosts = ipaddress.ip_network(host)
         else:
-            if message.data.get("version") == 4 and int(mask) < 24:
+            if message.data.get("version") == 4 and int(mask) < IPv4_CIDR_LIMIT:
                 raise ValueError("Subnet mask below 24 is not supported.")
-            if message.data.get("version") == 6 and int(mask) < 120:
+            if message.data.get("version") == 6 and int(mask) < IPv6_CIDR_LIMIT:
                 raise ValueError("Subnet mask below 120 is not supported")
             hosts = ipaddress.ip_network(f"{host}/{mask}", strict=False)
         return [Target(host=str(h), port=port, scheme=scheme) for h in hosts]
