@@ -1,6 +1,6 @@
 kind: Agent
 name: metasploit
-version: 0.0.5
+version: 0.0.6
 description: |
   This repository is an implementation of [Ostorlab Agent](https://pypi.org/project/ostorlab/) for the [Metasploit Framework](https://github.com/rapid7/metasploit-framework) by Rapid7.
   ## Getting Started
