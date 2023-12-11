@@ -238,10 +238,12 @@ class MetasploitAgent(
             )
         if "VHOST" in selected_module.options:
             selected_module["VHOST"] = vhost
-        if "RPORT" in selected_module.missing_required:
+        if "RPORT" in selected_module.options:
             selected_module["RPORT"] = rport
         if "SSL" in selected_module.options:
             selected_module["SSL"] = is_ssl
+        if "TARGETURI" in selected_module.missing_required:
+            selected_module["TARGETURI"] = "/"
         for arg in options:
             arg_name = arg["name"]
             if arg_name in selected_module.options:
