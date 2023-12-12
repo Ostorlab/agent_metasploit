@@ -178,7 +178,7 @@ class MetasploitAgent(
                 results = job_result["result"]
                 break
             if status == "errored":
-                raise ValueError("Module Error: %s", job_result["error"])
+                raise ValueError(f"""Module Error: {job_result["error"]}""")
             if time.time() - init_timestamp > MODULE_TIMEOUT:
                 logger.error("Metasploit job %s timed out", job_uuid)
                 break
@@ -228,7 +228,7 @@ class MetasploitAgent(
         try:
             rhost = socket.gethostbyname(vhost)
         except socket.gaierror as exc:
-            raise ValueError("The specified target %s is not valid", vhost) from exc
+            raise ValueError(f"The specified target {vhost} is not valid") from exc
         if "RHOSTS" in selected_module.required:
             selected_module["RHOSTS"] = rhost
         elif "DOMAIN" in selected_module.required:
