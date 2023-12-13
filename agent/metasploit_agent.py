@@ -92,7 +92,7 @@ class MetasploitAgent(
                         selected_module, rhost, rport, is_ssl, options
                     )
                 except ValueError as e:
-                    logger.error(
+                    logger.warning(
                         "Failed to set arguments for %s from %s",
                         selected_module.modulename,
                         e,
@@ -178,7 +178,7 @@ class MetasploitAgent(
                 results = job_result["result"]
                 break
             if status == "errored":
-                raise ValueError(f"""Module Error: {job_result["error"]}""")
+                logger.warning("Module Error: %s", job_result["error"])
             if time.time() - init_timestamp > MODULE_TIMEOUT:
                 logger.error("Metasploit job %s timed out", job_uuid)
                 break

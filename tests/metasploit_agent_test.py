@@ -226,3 +226,22 @@ def testMetasploitAgent_whenUnknownTarget_shouldNotBeProcessed(
     agent_instance.process(msg)
 
     connect_msfrpc_mock.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "agent_instance",
+    [["exploit/windows/http/exchange_proxyshell_rce", []]],
+    indirect=True,
+)
+def testExploit_whenHostNotExist_returnCorrectMessage(
+    agent_instance: msf_agent.MetasploitAgent,
+    agent_mock: list[message.Message],
+    agent_persist_mock: dict[str | bytes, str | bytes],
+    scan_message_host_not_exist: message.Message,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """Unit test for agent metasploit exploit check, case when target is not exist"""
+    agent_instance.process(scan_message_host_not_exist)
+
+    assert len(agent_mock) == 0
+    assert "The specified target sa.com is not valid" in caplog.text
