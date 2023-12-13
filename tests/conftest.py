@@ -101,3 +101,11 @@ def metasploitable_scan_message() -> message.Message:
     selector = "v3.asset.ip.v4"
     msg_data = {"host": "192.168.1.17", "mask": "32", "version": 4}
     return message.Message.from_data(selector, data=msg_data)
+
+
+@pytest.fixture()
+def scan_message_host_not_exist() -> message.Message:
+    """Creates a message of type v3.asset.domain_name.service to be used by the agent for testing purposes."""
+    selector = "v3.asset.domain_name.service"
+    msg_data = {"schema": "https", "name": "sa.com", "port": 443}
+    return message.Message.from_data(selector, data=msg_data)

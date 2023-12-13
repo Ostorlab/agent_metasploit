@@ -84,16 +84,23 @@ class MetasploitAgent(
             logger.info("Selected metasploit module: %s", selected_module.modulename)
             targets = utils.prepare_targets(message)
             for target in targets:
-                rhost = target.host
+                vhost = target.host
                 rport = target.port
                 is_ssl = target.scheme == "https"
                 try:
+                    rhost = socket.gethostbyname(vhost)
+                except socket.gaierror:
+                    logger.warning("The specified target %s is not valid", vhost)
+                    continue
+                try:
                     module_instance = self._set_module_args(
-                        selected_module, rhost, rport, is_ssl, options
+                        selected_module, vhost, rhost, rport, is_ssl, options
                     )
-                except ValueError:
-                    logger.error(
-                        "Failed to set arguments for %s", selected_module.modulename
+                except ValueError as e:
+                    logger.warning(
+                        "Failed to set arguments for %s from %s",
+                        selected_module.modulename,
+                        e,
                     )
                     continue
                 job = module_instance.check_exploit()
@@ -114,7 +121,7 @@ class MetasploitAgent(
                     and results.get("code") in VULNERABLE_STATUSES
                 ):
                     technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
-                    technical_detail += f"Target: {rhost}:{rport}\n"
+                    technical_detail += f"Target: {vhost}:{rport}\n"
                     technical_detail += f'Message: \n```{results["message"]}```'
 
                     self._emit_results(module_instance, technical_detail)
@@ -176,8 +183,7 @@ class MetasploitAgent(
                 results = job_result["result"]
                 break
             if status == "errored":
-                logger.error("Module error: %s", job_result["error"])
-                break
+                logger.warning("Module Error: %s", job_result["error"])
             if time.time() - init_timestamp > MODULE_TIMEOUT:
                 logger.error("Metasploit job %s timed out", job_uuid)
                 break
@@ -220,14 +226,11 @@ class MetasploitAgent(
         self,
         selected_module: msfrpc.MsfModule,
         vhost: str,
+        rhost: str,
         rport: int,
         is_ssl: bool,
         options: list[dict[str, str]],
     ) -> msfrpc.MsfModule:
-        try:
-            rhost = socket.gethostbyname(vhost)
-        except socket.gaierror as exc:
-            raise ValueError("The specified target is not valid") from exc
         if "RHOSTS" in selected_module.required:
             selected_module["RHOSTS"] = rhost
         elif "DOMAIN" in selected_module.required:
