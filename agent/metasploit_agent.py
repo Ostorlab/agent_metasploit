@@ -29,11 +29,10 @@ logger = logging.getLogger(__name__)
 MODULE_TIMEOUT = 300
 VULNERABLE_STATUSES = ["vulnerable", "appears"]
 METASPLOIT_AGENT_KEY = b"agent_metasploit_asset"
-TOKEN_REPLACE = "REPLACEME"
 REFERENCES = {
-    "CVE": f"https://nvd.nist.gov/vuln/detail/CVE-{TOKEN_REPLACE}",
-    "CWE": f"https://cwe.mitre.org/data/definitions/{TOKEN_REPLACE}.html",
-    "EDB": f"https://www.exploit-db.com/exploits/{TOKEN_REPLACE}",
+    "CVE": "https://nvd.nist.gov/vuln/detail/CVE-{ID}",
+    "CWE": "https://cwe.mitre.org/data/definitions/{ID}.html",
+    "EDB": "https://www.exploit-db.com/exploits/{ID}",
 }
 
 
@@ -129,7 +128,9 @@ class MetasploitAgent(
                 ):
                     technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
                     technical_detail += f"Target: {vhost}:{rport}\n"
-                    technical_detail += f'Message: \n```\n{results["message"]}\n```'
+                    technical_detail += (
+                        f'Message: \n```shell\n{results["message"]}\n```'
+                    )
 
                     self._emit_results(module_instance, technical_detail)
 
@@ -208,7 +209,7 @@ class MetasploitAgent(
                 if reference[0] == "URL":
                     msf_references[reference[1]] = reference[1]
                 elif reference[0] in REFERENCES:
-                    url = re.sub(TOKEN_REPLACE, reference[1], REFERENCES[reference[0]])
+                    url = REFERENCES[reference[0]].format(ID=reference[1])
                     msf_references[url] = url
         entry = kb.Entry(
             title=entry_title,
