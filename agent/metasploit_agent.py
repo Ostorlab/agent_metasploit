@@ -4,7 +4,6 @@ import socket
 import ipaddress
 import time
 from typing import Any
-import re
 
 from ostorlab.agent import agent, definitions as agent_definitions
 from ostorlab.agent.kb import kb
