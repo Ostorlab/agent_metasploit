@@ -233,40 +233,40 @@ class MetasploitAgent(
             risk_rating=vuln_mixin.RiskRating.HIGH,
         )
 
-
-def _set_module_args(
-    selected_module: msfrpc.MsfModule,
-    vhost: str,
-    rhost: str,
-    rport: int,
-    is_ssl: bool,
-    options: list[dict[str, str]],
-) -> msfrpc.MsfModule:
-    if "RHOSTS" in selected_module.required:
-        selected_module["RHOSTS"] = rhost
-    elif "DOMAIN" in selected_module.required:
-        selected_module["DOMAIN"] = rhost
-    else:
-        raise ValueError(
-            f"Argument not implemented, accepted args: {str(selected_module.required)}"
-        )
-    if "VHOST" in selected_module.options:
-        selected_module["VHOST"] = vhost
-    if "RPORT" in selected_module.options:
-        selected_module["RPORT"] = rport
-    if "SSL" in selected_module.options:
-        selected_module["SSL"] = is_ssl
-    if "TARGETURI" in selected_module.missing_required:
-        selected_module["TARGETURI"] = "/"
-    for arg in options:
-        arg_name = arg["name"]
-        if arg_name in selected_module.options:
-            selected_module[arg_name] = arg["value"]
-    if len(selected_module.missing_required) > 0:
-        raise ValueError(
-            f"The following arguments are missing: {str(selected_module.missing_required)}"
-        )
-    return selected_module
+    def _set_module_args(
+        self,
+        selected_module: msfrpc.MsfModule,
+        vhost: str,
+        rhost: str,
+        rport: int,
+        is_ssl: bool,
+        options: list[dict[str, str]],
+    ) -> msfrpc.MsfModule:
+        if "RHOSTS" in selected_module.required:
+            selected_module["RHOSTS"] = rhost
+        elif "DOMAIN" in selected_module.required:
+            selected_module["DOMAIN"] = rhost
+        else:
+            raise ValueError(
+                f"Argument not implemented, accepted args: {str(selected_module.required)}"
+            )
+        if "VHOST" in selected_module.options:
+            selected_module["VHOST"] = vhost
+        if "RPORT" in selected_module.options:
+            selected_module["RPORT"] = rport
+        if "SSL" in selected_module.options:
+            selected_module["SSL"] = is_ssl
+        if "TARGETURI" in selected_module.missing_required:
+            selected_module["TARGETURI"] = "/"
+        for arg in options:
+            arg_name = arg["name"]
+            if arg_name in selected_module.options:
+                selected_module[arg_name] = arg["value"]
+        if len(selected_module.missing_required) > 0:
+            raise ValueError(
+                f"The following arguments are missing: {str(selected_module.missing_required)}"
+            )
+        return selected_module
 
 
 if __name__ == "__main__":
