@@ -78,7 +78,7 @@ def testExploit_whenVulnerable_returnFindings(
         "Using `exploit` module `unix/misc/distcc_exec`\n"
         "Target: 192.168.1.17:443\n"
         "Message: \n"
-        "```The target is vulnerable.```"
+        "```\nThe target is vulnerable.\n```"
     )
     assert vulnerability_finding["references"] == []
 
