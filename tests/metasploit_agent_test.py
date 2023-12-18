@@ -78,8 +78,18 @@ def testExploit_whenVulnerable_returnFindings(
         "Using `exploit` module `unix/misc/distcc_exec`\n"
         "Target: 192.168.1.17:443\n"
         "Message: \n"
-        "```The target is vulnerable.```"
+        "```shell\nThe target is vulnerable.\n```"
     )
+    assert vulnerability_finding["references"] == [
+        {
+            "title": "https://nvd.nist.gov/vuln/detail/CVE-2004-2687",
+            "url": "https://nvd.nist.gov/vuln/detail/CVE-2004-2687",
+        },
+        {
+            "title": "http://distcc.samba.org/security.html",
+            "url": "http://distcc.samba.org/security.html",
+        },
+    ]
 
 
 @pytest.mark.parametrize(

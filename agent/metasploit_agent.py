@@ -28,6 +28,11 @@ logger = logging.getLogger(__name__)
 MODULE_TIMEOUT = 300
 VULNERABLE_STATUSES = ["vulnerable", "appears"]
 METASPLOIT_AGENT_KEY = b"agent_metasploit_asset"
+REFERENCES = {
+    "CVE": "https://nvd.nist.gov/vuln/detail/CVE-{ID}",
+    "CWE": "https://cwe.mitre.org/data/definitions/{ID}.html",
+    "EDB": "https://www.exploit-db.com/exploits/{ID}",
+}
 
 
 class Error(Exception):
@@ -122,7 +127,9 @@ class MetasploitAgent(
                 ):
                     technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
                     technical_detail += f"Target: {vhost}:{rport}\n"
-                    technical_detail += f'Message: \n```{results["message"]}```'
+                    technical_detail += (
+                        f'Message: \n```shell\n{results["message"]}\n```'
+                    )
 
                     self._emit_results(module_instance, technical_detail)
 
@@ -198,7 +205,11 @@ class MetasploitAgent(
         msf_references = {}
         for reference in module_instance.references:
             if isinstance(reference, list) and len(reference) == 2:
-                msf_references[reference[0]] = reference[1]
+                if reference[0] == "URL":
+                    msf_references[reference[1]] = reference[1]
+                elif reference[0] in REFERENCES:
+                    url = REFERENCES[reference[0]].format(ID=reference[1])
+                    msf_references[url] = url
         entry = kb.Entry(
             title=entry_title,
             risk_rating="HIGH",
@@ -251,12 +262,10 @@ class MetasploitAgent(
             arg_name = arg["name"]
             if arg_name in selected_module.options:
                 selected_module[arg_name] = arg["value"]
-
         if len(selected_module.missing_required) > 0:
             raise ValueError(
                 f"The following arguments are missing: {str(selected_module.missing_required)}"
             )
-
         return selected_module
 
 
