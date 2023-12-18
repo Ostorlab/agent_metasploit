@@ -80,7 +80,16 @@ def testExploit_whenVulnerable_returnFindings(
         "Message: \n"
         "```\nThe target is vulnerable.\n```"
     )
-    assert vulnerability_finding["references"] == []
+    assert vulnerability_finding["references"] == [
+        {
+            "title": "https://nvd.nist.gov/vuln/detail/CVE-2004-2687",
+            "url": "https://nvd.nist.gov/vuln/detail/CVE-2004-2687",
+        },
+        {
+            "title": "http://distcc.samba.org/security.html",
+            "url": "http://distcc.samba.org/security.html",
+        },
+    ]
 
 
 @pytest.mark.parametrize(
