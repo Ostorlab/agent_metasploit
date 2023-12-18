@@ -4,6 +4,7 @@ import socket
 import ipaddress
 import time
 from typing import Any
+import re
 
 from ostorlab.agent import agent, definitions as agent_definitions
 from ostorlab.agent.kb import kb
@@ -28,6 +29,12 @@ logger = logging.getLogger(__name__)
 MODULE_TIMEOUT = 300
 VULNERABLE_STATUSES = ["vulnerable", "appears"]
 METASPLOIT_AGENT_KEY = b"agent_metasploit_asset"
+TOKEN_REPLACE = "REPLACEME"
+REFERENCES = {
+    "CVE": f"https://nvd.nist.gov/vuln/detail/CVE-{TOKEN_REPLACE}",
+    "CWE": f"https://cwe.mitre.org/data/definitions/{TOKEN_REPLACE}.html",
+    "EDB": f"https://www.exploit-db.com/exploits/{TOKEN_REPLACE}",
+}
 
 
 class Error(Exception):
@@ -122,7 +129,7 @@ class MetasploitAgent(
                 ):
                     technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
                     technical_detail += f"Target: {vhost}:{rport}\n"
-                    technical_detail += f'Message: \n```{results["message"]}```'
+                    technical_detail += f'Message: \n```\n{results["message"]}\n```'
 
                     self._emit_results(module_instance, technical_detail)
 
@@ -198,7 +205,11 @@ class MetasploitAgent(
         msf_references = {}
         for reference in module_instance.references:
             if isinstance(reference, list) and len(reference) == 2:
-                msf_references[reference[0]] = reference[1]
+                if reference[0] == "URL":
+                    msf_references[reference[1]] = reference[1]
+                elif reference[0] in REFERENCES:
+                    url = re.sub(TOKEN_REPLACE, reference[1], REFERENCES[reference[0]])
+                    msf_references[url] = url
         entry = kb.Entry(
             title=entry_title,
             risk_rating="HIGH",
@@ -222,42 +233,40 @@ class MetasploitAgent(
             risk_rating=vuln_mixin.RiskRating.HIGH,
         )
 
-    def _set_module_args(
-        self,
-        selected_module: msfrpc.MsfModule,
-        vhost: str,
-        rhost: str,
-        rport: int,
-        is_ssl: bool,
-        options: list[dict[str, str]],
-    ) -> msfrpc.MsfModule:
-        if "RHOSTS" in selected_module.required:
-            selected_module["RHOSTS"] = rhost
-        elif "DOMAIN" in selected_module.required:
-            selected_module["DOMAIN"] = rhost
-        else:
-            raise ValueError(
-                f"Argument not implemented, accepted args: {str(selected_module.required)}"
-            )
-        if "VHOST" in selected_module.options:
-            selected_module["VHOST"] = vhost
-        if "RPORT" in selected_module.options:
-            selected_module["RPORT"] = rport
-        if "SSL" in selected_module.options:
-            selected_module["SSL"] = is_ssl
-        if "TARGETURI" in selected_module.missing_required:
-            selected_module["TARGETURI"] = "/"
-        for arg in options:
-            arg_name = arg["name"]
-            if arg_name in selected_module.options:
-                selected_module[arg_name] = arg["value"]
 
-        if len(selected_module.missing_required) > 0:
-            raise ValueError(
-                f"The following arguments are missing: {str(selected_module.missing_required)}"
-            )
-
-        return selected_module
+def _set_module_args(
+    selected_module: msfrpc.MsfModule,
+    vhost: str,
+    rhost: str,
+    rport: int,
+    is_ssl: bool,
+    options: list[dict[str, str]],
+) -> msfrpc.MsfModule:
+    if "RHOSTS" in selected_module.required:
+        selected_module["RHOSTS"] = rhost
+    elif "DOMAIN" in selected_module.required:
+        selected_module["DOMAIN"] = rhost
+    else:
+        raise ValueError(
+            f"Argument not implemented, accepted args: {str(selected_module.required)}"
+        )
+    if "VHOST" in selected_module.options:
+        selected_module["VHOST"] = vhost
+    if "RPORT" in selected_module.options:
+        selected_module["RPORT"] = rport
+    if "SSL" in selected_module.options:
+        selected_module["SSL"] = is_ssl
+    if "TARGETURI" in selected_module.missing_required:
+        selected_module["TARGETURI"] = "/"
+    for arg in options:
+        arg_name = arg["name"]
+        if arg_name in selected_module.options:
+            selected_module[arg_name] = arg["value"]
+    if len(selected_module.missing_required) > 0:
+        raise ValueError(
+            f"The following arguments are missing: {str(selected_module.missing_required)}"
+        )
+    return selected_module
 
 
 if __name__ == "__main__":

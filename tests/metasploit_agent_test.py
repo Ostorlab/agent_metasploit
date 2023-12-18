@@ -80,6 +80,7 @@ def testExploit_whenVulnerable_returnFindings(
         "Message: \n"
         "```The target is vulnerable.```"
     )
+    assert vulnerability_finding["references"] == []
 
 
 @pytest.mark.parametrize(
