@@ -25,7 +25,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-MODULE_TIMEOUT = 300
+MODULE_TIMEOUT = 30
 VULNERABLE_STATUSES = ["vulnerable", "appears"]
 METASPLOIT_AGENT_KEY = b"agent_metasploit_asset"
 REFERENCES = {
