@@ -226,7 +226,7 @@ class MsfRpcClient(object):
             return r.content
 
         return convert(  # noqa: F405
-            decode(r.content),
+            decode(r.content),  # noqa: F405
             self.encoding,  # noqa: F405
         )  # convert all keys/vals to utf8
 

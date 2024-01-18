@@ -23,7 +23,7 @@ def test_module_settings(client):
 
 def test_module_rpc_info(client):
     modinfo = client.call(
-        MsfRpcMethod.ModuleInfo,
+        MsfRpcMethod.ModuleInfo,  # noqa: F405
         ["exploit", "windows/smb/ms08_067_netapi"],  # noqa: F405
     )
     assert (
