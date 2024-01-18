@@ -10,7 +10,7 @@ import requests
 import requests.packages.urllib3
 from retry import retry
 
-from pymetasploit3.utils import *
+from pymetasploit3.utils import *  # noqa: F403
 
 requests.packages.urllib3.disable_warnings()
 
@@ -216,7 +216,7 @@ class MsfRpcClient(object):
             url = "http://%s:%s%s" % (self.host, self.port, self.uri)
 
         opts.insert(0, method)
-        payload = encode(opts)
+        payload = encode(opts)  # noqa: F405
 
         r = self.post_request(url, payload)
 
@@ -225,8 +225,9 @@ class MsfRpcClient(object):
         if is_raw:
             return r.content
 
-        return convert(
-            decode(r.content), self.encoding
+        return convert(  # noqa: F405
+            decode(r.content),
+            self.encoding,  # noqa: F405
         )  # convert all keys/vals to utf8
 
     @retry(tries=3, delay=1, backoff=2)
@@ -1422,11 +1423,11 @@ class MsfModule(object):
             [self.moduletype, self.modulename, runopts],
             True,
         )
-        payload = decode(data)[str.encode("payload")]
+        payload = decode(data)[str.encode("payload")]  # noqa: F405
         if isinstance(payload, str):
             return payload
         try:
-            payload = decode(payload)
+            payload = decode(payload)  # noqa: F405
         except (msgpack.exceptions.ExtraData, UnicodeDecodeError):
             return payload
         return payload
@@ -1970,7 +1971,7 @@ class MeterpreterSession(MsfSession):
         counter = 1
         while counter < timeout:
             out += self.read()
-            if end_strs == None:
+            if end_strs == None:  # noqa: E711
                 if len(out) > 0:
                     return out
             else:
@@ -1981,7 +1982,7 @@ class MeterpreterSession(MsfSession):
 
         if timeout_exception:
             msg = f"Command <{repr(cmd)[1:-1]}> timed out in <{timeout}s> on session <{self.sid}>"
-            if end_strs == None:
+            if end_strs == None:  # noqa: E711
                 msg += f" without finding any termination strings within <{end_strs}> in the output: <{out}>"
             raise MsfError(msg)
         else:
@@ -2000,7 +2001,7 @@ class MeterpreterSession(MsfSession):
         out = self.run_with_output(
             cmd, end_strs, timeout=timeout, timeout_exception=timeout_exception
         )
-        if exit_shell == True:
+        if exit_shell == True:  # noqa: E712
             self.read()  # Clear buffer
             res = self.detach()
             if "result" in res:

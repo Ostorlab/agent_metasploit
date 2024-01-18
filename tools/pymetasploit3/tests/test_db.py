@@ -2,7 +2,7 @@
 
 import pytest
 import os
-from pymetasploit3.msfrpc import *
+from pymetasploit3.msfrpc import *  # noqa: F403
 
 
 @pytest.mark.skip("We don't need to use msf database")
@@ -52,7 +52,7 @@ def test_hosts_add(client):
         if d["address"] == "1.1.1.2":
             host_found = True
             break
-    assert host_found == True
+    assert host_found == True  # noqa: E712
 
 
 def test_hosts_del(client):
@@ -63,7 +63,7 @@ def test_hosts_del(client):
         if d["address"] == "1.1.1.2":
             host_found = True
             break
-    assert host_found == False
+    assert host_found == False  # noqa: E712
 
 
 def test_services_add(client):
@@ -76,7 +76,7 @@ def test_services_add(client):
         if d["host"] == "1.1.1.3" and d["port"] == 1 and d["proto"] == "tcp":
             service_found = True
             break
-    assert service_found == True
+    assert service_found == True  # noqa: E712
 
 
 def test_services_del(client):
@@ -87,7 +87,7 @@ def test_services_del(client):
         if d["host"] == "1.1.1.3" and d["port"] == 1 and d["proto"] == "tcp":
             service_found = True
             break
-    assert service_found == False
+    assert service_found == False  # noqa: E712
 
 
 def test_vuln_add(client):
@@ -131,4 +131,4 @@ def test_workspaces_del(client):
     for d in ws:
         if d["name"] == "pytest":
             found = True
-    assert found == False
+    assert found == False  # noqa: E712
