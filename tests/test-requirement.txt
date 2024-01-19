@@ -1,9 +1,8 @@
-pylint
 pytest
-black
 mypy
 pytest_mock
 # Typing requirements.
 types-requests
 types-psutil
 typing-extensions
+ruff
