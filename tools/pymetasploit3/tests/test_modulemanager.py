@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-from pymetasploit3.msfrpc import *  # noqa: F403
+import pytest
+from pymetasploit3.msfrpc import *
 
 
 def test_module_list(client):
@@ -23,8 +24,7 @@ def test_module_settings(client):
 
 def test_module_rpc_info(client):
     modinfo = client.call(
-        MsfRpcMethod.ModuleInfo,  # noqa: F405
-        ["exploit", "windows/smb/ms08_067_netapi"],  # noqa: F405
+        MsfRpcMethod.ModuleInfo, ["exploit", "windows/smb/ms08_067_netapi"]
     )
     assert (
         modinfo["name"]

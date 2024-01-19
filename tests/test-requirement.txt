@@ -5,3 +5,4 @@ pytest_mock
 types-requests
 types-psutil
 typing-extensions
+ruff

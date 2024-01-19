@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import pytest
-from pymetasploit3.msfrpc import *  # noqa: F403
+from pymetasploit3.msfrpc import *
 
 
 @pytest.fixture()
@@ -13,12 +13,12 @@ def cid(client):
 
 
 def test_jobs(client):
-    assert type(client.jobs.list) == dict  # noqa: E721
+    assert type(client.jobs.list) == dict
 
 
 def test_login(client):
-    assert isinstance(client, MsfRpcClient)  # noqa: F405
-    tl = client.call(MsfRpcMethod.AuthTokenList)  # noqa: F405
+    assert isinstance(client, MsfRpcClient)
+    tl = client.call(MsfRpcMethod.AuthTokenList)
     assert "tokens" in tl
     assert len(tl["tokens"]) > 1  # There should be temp token and UUID perm token
     nontemp_token = False
@@ -28,9 +28,9 @@ def test_login(client):
         if "TEMP" not in x:
             nontemp_token = True
             break
-    assert nontemp_token == True  # noqa: E712
+    assert nontemp_token == True
 
 
 def test_pluginloaded(client):
-    plugins = client.call(MsfRpcMethod.PluginLoaded)  # noqa: F405
+    plugins = client.call(MsfRpcMethod.PluginLoaded)
     assert "msgrpc" in plugins["plugins"]
