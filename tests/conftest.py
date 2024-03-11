@@ -1,4 +1,5 @@
 """Pytest fixtures for agent Metasploit"""
+
 import pathlib
 import random
 from typing import Any

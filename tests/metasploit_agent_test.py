@@ -1,4 +1,5 @@
 """Unit tests for agent Metasploit."""
+
 import pytest
 from ostorlab.agent.message import message
 from pytest_mock import plugin

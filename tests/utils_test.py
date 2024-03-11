@@ -1,4 +1,5 @@
 """Unit tests for metasploit agent utilities"""
+
 from ostorlab.agent.message import message
 
 from agent import utils

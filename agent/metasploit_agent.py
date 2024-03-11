@@ -1,4 +1,5 @@
 """Ostorlab Agent implementation for metasploit"""
+
 import logging
 import socket
 import ipaddress
