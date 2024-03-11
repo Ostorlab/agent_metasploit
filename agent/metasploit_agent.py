@@ -72,7 +72,7 @@ class MetasploitAgent(
 
         """
 
-        logger.info("processing message of selector : %s", message.selector)
+        logger.debug("processing message of selector : %s", message.selector)
         if self._is_target_already_processed(message) is True:
             return
 
@@ -136,7 +136,7 @@ class MetasploitAgent(
         client.logout()
 
         self._mark_target_as_processed(message)
-        logger.info("Done processing message of selector : %s", message.selector)
+        logger.debug("Done processing message of selector : %s", message.selector)
 
     def _is_target_already_processed(self, message: m.Message) -> bool:
         """Checks if the target has already been processed before, relies on the redis server."""
