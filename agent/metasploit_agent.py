@@ -88,8 +88,11 @@ class MetasploitAgent(
                 logger.error("Specified module %s does not exist", module)
                 continue
             logger.info("Selected metasploit module: %s", selected_module.modulename)
+
+            logger.info("Preparing targets ...")
             targets = utils.prepare_targets(message)
             for target in targets:
+                logger.info("Scanning targets `%s`.", targets)
                 vhost = target.host
                 rport = target.port
                 is_ssl = target.scheme == "https"
@@ -131,7 +134,7 @@ class MetasploitAgent(
                     technical_detail += (
                         f'Message: \n```shell\n{results["message"]}\n```'
                     )
-
+                    logger.info("Emitting results for %s", module_instance.modulename)
                     self._emit_results(module_instance, technical_detail)
 
         client.logout()
