@@ -1,4 +1,5 @@
 """Ostorlab Agent implementation for metasploit"""
+
 import logging
 import socket
 import ipaddress
@@ -72,7 +73,7 @@ class MetasploitAgent(
 
         """
 
-        logger.info("processing message of selector : %s", message.selector)
+        logger.debug("processing message of selector : %s", message.selector)
         if self._is_target_already_processed(message) is True:
             return
 
@@ -87,7 +88,10 @@ class MetasploitAgent(
                 logger.error("Specified module %s does not exist", module)
                 continue
             logger.info("Selected metasploit module: %s", selected_module.modulename)
+
+            logger.info("Preparing targets ...")
             targets = utils.prepare_targets(message)
+            logger.info("Scanning targets `%s`.", targets)
             for target in targets:
                 vhost = target.host
                 rport = target.port
@@ -125,18 +129,27 @@ class MetasploitAgent(
                     isinstance(results, dict)
                     and results.get("code") in VULNERABLE_STATUSES
                 ):
+                    logger.info(
+                        "Target `%s` is vulnerable to %s",
+                        vhost,
+                        module_instance.modulename,
+                    )
                     technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
                     technical_detail += f"Target: {vhost}:{rport}\n"
                     technical_detail += (
                         f'Message: \n```shell\n{results["message"]}\n```'
                     )
-
                     self._emit_results(module_instance, technical_detail)
-
+                else:
+                    logger.info(
+                        "Target `%s` is not vulnerable to %s",
+                        vhost,
+                        module_instance.modulename,
+                    )
         client.logout()
 
         self._mark_target_as_processed(message)
-        logger.info("Done processing message of selector : %s", message.selector)
+        logger.debug("Done processing message of selector : %s", message.selector)
 
     def _is_target_already_processed(self, message: m.Message) -> bool:
         """Checks if the target has already been processed before, relies on the redis server."""

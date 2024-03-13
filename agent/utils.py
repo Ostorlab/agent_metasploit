@@ -1,4 +1,5 @@
 """Utilities for agent Metasploit"""
+
 import dataclasses
 import ipaddress
 from typing import cast
