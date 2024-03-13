@@ -91,8 +91,8 @@ class MetasploitAgent(
 
             logger.info("Preparing targets ...")
             targets = utils.prepare_targets(message)
+            logger.info("Scanning targets `%s`.", targets)
             for target in targets:
-                logger.info("Scanning targets `%s`.", targets)
                 vhost = target.host
                 rport = target.port
                 is_ssl = target.scheme == "https"
@@ -129,14 +129,23 @@ class MetasploitAgent(
                     isinstance(results, dict)
                     and results.get("code") in VULNERABLE_STATUSES
                 ):
+                    logger.info(
+                        "Target `%s` is vulnerable to %s",
+                        vhost,
+                        module_instance.modulename,
+                    )
                     technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
                     technical_detail += f"Target: {vhost}:{rport}\n"
                     technical_detail += (
                         f'Message: \n```shell\n{results["message"]}\n```'
                     )
-                    logger.info("Emitting results for %s", module_instance.modulename)
                     self._emit_results(module_instance, technical_detail)
-
+                else:
+                    logger.info(
+                        "Target `%s` is not vulnerable to %s",
+                        vhost,
+                        module_instance.modulename,
+                    )
         client.logout()
 
         self._mark_target_as_processed(message)
