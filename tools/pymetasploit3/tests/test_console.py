@@ -47,7 +47,7 @@ def test_console_manager_readwrite(client, cid):
 def test_console_run_module(client, cid):
     x = client.modules.use("exploit", "unix/ftp/vsftpd_234_backdoor")
     x["RHOSTS"] = "127.0.0.1"
-    out = client.consoles.console(cid).run_module_with_output(x)
+    out = client.consoles.console(cid).run_module_with_output(x, mod="exploit")
     assert type(out) == str
     assert (
         "[-] 127.0.0.1:21 - Exploit failed [unreachable]: Rex::ConnectionRefused The connection was refused by the remote host (127.0.0.1:21)."
