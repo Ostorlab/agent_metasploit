@@ -1,4 +1,4 @@
 #!/bin/bash
 
 supervisord -c /etc/supervisor/conf.d/supervisord.conf
-python3 /app/agent/metasploit_agent.py
+python3.14 /app/agent/metasploit_agent.py
