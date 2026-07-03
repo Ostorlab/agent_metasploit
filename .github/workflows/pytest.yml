@@ -47,11 +47,4 @@ jobs:
         python -m uv pip install -r tests/test-requirement.txt
     - name: Running tests with pytest.
       run: |
-        set -o pipefail
-        pytest -m "not docker" tests/ --cov=./ --cov-report=xml:coverage.xml --cov-report=term-missing
-    - name: Upload coverage to Codecov.
-      uses: codecov/codecov-action@v4
-      with:
-        verbose: true
-        token: ${{ secrets.CODECOV_TOKEN }}
-        file: coverage.xml
+        pytest -m "not docker" tests/
