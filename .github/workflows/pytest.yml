@@ -48,4 +48,4 @@ jobs:
     - name: Running tests with pytest.
       run: |
         set -o pipefail
-        pytest --forked -m "not docker" tests/
+         pytest -m "not docker" tests/
