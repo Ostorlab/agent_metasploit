@@ -47,4 +47,5 @@ jobs:
         python -m uv pip install -r tests/test-requirement.txt
     - name: Running tests with pytest.
       run: |
-        pytest -m "not docker" tests/
+        set -o pipefail
+        pytest --forked -m "not docker" tests/
