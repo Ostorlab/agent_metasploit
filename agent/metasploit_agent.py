@@ -137,7 +137,7 @@ class MetasploitAgent(
                     technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
                     technical_detail += f"Target: {vhost}:{rport}\n"
                     technical_detail += (
-                        f'Message: \n```shell\n{results["message"]}\n```'
+                        f"Message: \n```shell\n{results['message']}\n```"
                     )
                     self._emit_results(module_instance, technical_detail)
                 else:
