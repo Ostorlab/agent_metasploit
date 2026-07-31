@@ -32,8 +32,7 @@ def agent_instance(request: Any) -> msf_agent.MetasploitAgent:
                 name="config",
                 type="array",
                 value=bytes(
-                    '[{"module": "%s", "options": %s}]' % (module, options),
-                    encoding="utf-8",
+                    f'[{{"module": "{module}", "options": {options}}}]'.encode(),
                 ),
             )
         ]
