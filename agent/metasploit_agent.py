@@ -1,21 +1,22 @@
 """Ostorlab Agent implementation for metasploit"""
 
+import ipaddress
 import logging
 import socket
-import ipaddress
 import time
 from typing import Any
 
-from ostorlab.agent import agent, definitions as agent_definitions
+from ostorlab.agent import agent
+from ostorlab.agent import definitions as agent_definitions
 from ostorlab.agent.kb import kb
 from ostorlab.agent.message import message as m
 from ostorlab.agent.mixins import agent_persist_mixin as persist_mixin
 from ostorlab.agent.mixins import agent_report_vulnerability_mixin as vuln_mixin
 from ostorlab.runtimes import definitions as runtime_definitions
+from pymetasploit3 import msfrpc
 from rich import logging as rich_logging
 
 from agent import utils
-from pymetasploit3 import msfrpc
 
 logging.basicConfig(
     format="%(message)s",
@@ -137,7 +138,7 @@ class MetasploitAgent(
                     technical_detail = f"Using `{module_instance.moduletype}` module `{module_instance.modulename}`\n"
                     technical_detail += f"Target: {vhost}:{rport}\n"
                     technical_detail += (
-                        f'Message: \n```shell\n{results["message"]}\n```'
+                        f"Message: \n```shell\n{results['message']}\n```"
                     )
                     self._emit_results(module_instance, technical_detail)
                 else:
@@ -261,7 +262,7 @@ class MetasploitAgent(
             selected_module["DOMAIN"] = rhost
         else:
             raise ValueError(
-                f"Argument not implemented, accepted args: {str(selected_module.required)}"
+                f"Argument not implemented, accepted args: {selected_module.required!s}"
             )
         if "VHOST" in selected_module.options:
             selected_module["VHOST"] = vhost
@@ -277,7 +278,7 @@ class MetasploitAgent(
                 selected_module[arg_name] = arg["value"]
         if len(selected_module.missing_required) > 0:
             raise ValueError(
-                f"The following arguments are missing: {str(selected_module.missing_required)}"
+                f"The following arguments are missing: {selected_module.missing_required!s}"
             )
         return selected_module
 

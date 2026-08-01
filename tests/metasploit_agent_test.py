@@ -7,6 +7,7 @@ from pytest_mock import plugin
 from agent import metasploit_agent as msf_agent
 
 
+@pytest.mark.docker
 @pytest.mark.parametrize(
     "agent_instance",
     [["exploit/windows/http/exchange_proxyshell_rce", []]],
@@ -24,6 +25,7 @@ def testExploit_whenSafe_returnNone(
     assert len(agent_mock) == 0
 
 
+@pytest.mark.docker
 @pytest.mark.parametrize(
     "agent_instance",
     [["auxiliary/scanner/http/exchange_proxylogon", []]],
@@ -41,6 +43,7 @@ def testAuxiliaryExecute_whenSafe_returnNone(
     assert len(agent_mock) == 0
 
 
+@pytest.mark.docker
 @pytest.mark.parametrize(
     "agent_instance", [["exploit/unix/misc/distcc_exec", []]], indirect=True
 )
@@ -93,6 +96,7 @@ def testExploit_whenVulnerable_returnFindings(
     ]
 
 
+@pytest.mark.docker
 @pytest.mark.parametrize(
     "agent_instance",
     [["exploit/windows/http/ws_ftp_rce_cve_2023_40044", []]],
@@ -111,6 +115,7 @@ def testExploit_whenCannotCheck_returnNone(
     assert len(agent_mock) == 0
 
 
+@pytest.mark.docker
 @pytest.mark.parametrize(
     "agent_instance",
     [["auxiliary/scanner/ike/cisco_ike_benigncertain", []]],
@@ -129,6 +134,7 @@ def testExploit_whenDefaultAuxiliaryMessage_returnNone(
     assert len(agent_mock) == 0
 
 
+@pytest.mark.docker
 @pytest.mark.parametrize(
     "agent_instance",
     [["auxiliary/scanner/ssl/openssl_heartbleed", []]],
@@ -147,6 +153,7 @@ def testAuxiliary_whenSafe_returnNone(
     assert len(agent_mock) == 0
 
 
+@pytest.mark.docker
 @pytest.mark.parametrize(
     "agent_instance",
     [["auxiliary/scanner/ssl/openssl_heartbleed", []]],
@@ -239,6 +246,7 @@ def testMetasploitAgent_whenUnknownTarget_shouldNotBeProcessed(
     connect_msfrpc_mock.assert_not_called()
 
 
+@pytest.mark.docker
 @pytest.mark.parametrize(
     "agent_instance",
     [["exploit/windows/http/exchange_proxyshell_rce", []]],
