@@ -7,7 +7,6 @@ from urllib import parse as urlparser
 
 import tenacity
 from ostorlab.agent.message import message as m
-
 from pymetasploit3 import msfrpc
 
 SCHEME_TO_PORT = {

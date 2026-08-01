@@ -13,6 +13,14 @@ from ostorlab.utils import definitions as utils_definitions
 from agent import metasploit_agent as msf_agent
 
 
+def pytest_configure(config: pytest.Config) -> None:
+    """Register custom markers."""
+    config.addinivalue_line(
+        "markers",
+        "docker: marks tests that require a running docker/metasploit service",
+    )
+
+
 @pytest.fixture()
 def agent_instance(request: Any) -> msf_agent.MetasploitAgent:
     module = request.param[0]
@@ -32,7 +40,7 @@ def agent_instance(request: Any) -> msf_agent.MetasploitAgent:
                 name="config",
                 type="array",
                 value=bytes(
-                    '[{"module": "%s", "options": %s}]' % (module, options),
+                    f'[{{"module": "{module}", "options": {options}}}]',
                     encoding="utf-8",
                 ),
             )
